@@ -1,0 +1,6 @@
+\.gem$
+^Gemfile\.lock$
+\.sublime-project$
+\.sublime-workspace$
+^doc/
+^.yardoc/
