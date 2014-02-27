@@ -11,6 +11,8 @@ module ZMQ
       @type = type
       @ptr = LibZMQ.zmq_socket @context.ptr, @type
       
+      @msgptr = FFI::MemoryPointer.new LibZMQ::Message.size, 1, false
+      
       ObjectSpace.define_finalizer self,
                                    self.class.finalizer(@socket, Process.pid)
     end
@@ -22,7 +24,7 @@ module ZMQ
         @temp_buffers.clear if @temp_buffers
         
         rc = LibZMQ.zmq_close @ptr
-        ZMQ.error_check true if rc!=0
+        ZMQ.error_check true if rc==-1
         
         @ptr = nil
       end
@@ -39,27 +41,60 @@ module ZMQ
     end
     
     # Bind to an endpoint
-    def bind endpoint
+    def bind(endpoint)
       rc = LibZMQ.zmq_bind @ptr, endpoint
-      ZMQ.error_check true if rc!=0
+      ZMQ.error_check true if rc==-1
     end
     
     # Connect to an endpoint
-    def connect endpoint
+    def connect(endpoint)
       rc = LibZMQ.zmq_connect @ptr, endpoint
-      ZMQ.error_check true if rc!=0
+      ZMQ.error_check true if rc==-1
     end
     
     # Unbind from an endpoint
-    def unbind endpoint
+    def unbind(endpoint)
       rc = LibZMQ.zmq_unbind @ptr, endpoint
-      ZMQ.error_check true if rc!=0
+      ZMQ.error_check true if rc==-1
     end
     
     # Disconnect to an endpoint
-    def disconnect endpoint
+    def disconnect(endpoint)
       rc = LibZMQ.zmq_disconnect @ptr, endpoint
-      ZMQ.error_check true if rc!=0
+      ZMQ.error_check true if rc==-1
+    end
+    
+    # Send a string to the socket
+    def send_string(string, flags = 0)
+      size = string.respond_to?(:bytesize) ? string.bytesize : string.size
+      @msgbuf = LibC.malloc size
+      @msgbuf.write_string string, size
+      
+      rc = LibZMQ.zmq_msg_init_data @msgptr, @msgbuf, size, LibC::Free, nil
+      ZMQ.error_check true if rc==-1
+      
+      rc = LibZMQ.zmq_sendmsg @ptr, @msgptr, flags
+      ZMQ.error_check true if rc==-1
+      
+      rc = LibZMQ.zmq_msg_close @msgptr
+      ZMQ.error_check true if rc==-1
+    end
+    
+    # Receive a string from the socket
+    def recv_string(flags = 0)
+      rc = LibZMQ.zmq_msg_init @msgptr
+      ZMQ.error_check true if rc==-1
+      
+      rc = LibZMQ.zmq_recvmsg @ptr, @msgptr, flags
+      ZMQ.error_check true if rc==-1
+      
+      str = LibZMQ.zmq_msg_data(@msgptr)
+                  .read_string(LibZMQ.zmq_msg_size(@msgptr))
+      
+      rc = LibZMQ.zmq_msg_close @msgptr
+      ZMQ.error_check true if rc==-1
+      
+      str
     end
     
     # Set a socket option
@@ -68,13 +103,18 @@ module ZMQ
         { raise ArgumentError, "Unknown option: #{option}" }
       
       unless type == :string
-        valptr = FFI::MemoryPointer.new(type)
-        valptr.send :"write_#{type}", value
+        if type == :bool
+          valptr = FFI::MemoryPointer.new(:int)
+          valptr.write_int(value ? 1 : 0)
+        else
+          valptr = FFI::MemoryPointer.new(type)
+          valptr.send :"write_#{type}", value
+        end
         value = valptr
       end
       
       rc = LibZMQ.zmq_setsockopt @ptr, option, value, value.size
-      ZMQ.error_check true if rc!=0
+      ZMQ.error_check true if rc==-1
       
       value
     end
@@ -87,10 +127,12 @@ module ZMQ
       value, size = get_opt_pointers type
       
       rc = LibZMQ.zmq_getsockopt @ptr, option, value, size
-      ZMQ.error_check true if rc!=0
+      ZMQ.error_check true if rc==-1
       
       if type == :string
         value.read_string(size.read_int-1)
+      elsif type == :bool
+        value.read_int == 1
       else
         value.send :"read_#{type}"
       end
@@ -99,6 +141,8 @@ module ZMQ
   private
     
     def get_opt_pointers(type)
+      type = :int if type == :bool
+      
       @temp_buffers ||= { string: [
           FFI::MemoryPointer.new(255),
           FFI::MemoryPointer.new(:size_t).write_int(255)
@@ -111,7 +155,7 @@ module ZMQ
     
     @@option_types = {
     # Get options
-      ZMQ::RCVMORE             => :int,
+      ZMQ::RCVMORE             => :bool,
       ZMQ::RCVHWM              => :int,
       ZMQ::AFFINITY            => :uint64,
       ZMQ::IDENTITY            => :string,
@@ -127,9 +171,9 @@ module ZMQ
       ZMQ::MULTICAST_HOPS      => :int,
       ZMQ::RCVTIMEO            => :int,
       ZMQ::SNDTIMEO            => :int,
-      ZMQ::IPV6                => :int,
-      ZMQ::IPV4ONLY            => :int,
-      ZMQ::IMMEDIATE           => :int,
+      ZMQ::IPV6                => :bool,
+      ZMQ::IPV4ONLY            => :bool,
+      ZMQ::IMMEDIATE           => :bool,
       ZMQ::FD                  => :int,
       ZMQ::EVENTS              => :int,
       ZMQ::LAST_ENDPOINT       => :string,
@@ -166,9 +210,9 @@ module ZMQ
       ZMQ::MULTICAST_HOPS      => :int,
       ZMQ::RCVTIMEO            => :int,
       ZMQ::SNDTIMEO            => :int,
-      ZMQ::IPV6                => :int,
-      ZMQ::IPV4ONLY            => :int,
-      ZMQ::IMMEDIATE           => :int,
+      ZMQ::IPV6                => :bool,
+      ZMQ::IPV4ONLY            => :bool,
+      ZMQ::IMMEDIATE           => :bool,
       ZMQ::ROUTER_HANDOVER     => :int,
       ZMQ::ROUTER_MANDATORY    => :int,
       ZMQ::ROUTER_RAW          => :int,
@@ -189,7 +233,7 @@ module ZMQ
       ZMQ::CURVE_SECRETKEY     => :string,
       ZMQ::CURVE_SERVERKEY     => :string,
       ZMQ::ZAP_DOMAIN          => :string,
-      ZMQ::CONFLATE            => :int,
+      ZMQ::CONFLATE            => :bool,
     })
     
   end

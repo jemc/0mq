@@ -7,6 +7,9 @@ describe ZMQ::Socket do
   subject { ZMQ::Socket.new type }
   let(:type) { ZMQ::SUB }
   
+  let(:pull_sock) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/pp'} }
+  let(:push_sock) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/pp'} }
+  
   its(:ptr) { should be_a FFI::Pointer }
   its(:context) { should eq ZMQ::DefaultContext }
   its(:type) { should eq ZMQ::SUB }
@@ -64,6 +67,12 @@ describe ZMQ::Socket do
     subject.get_opt(ZMQ::AFFINITY).should eq 0xFFFFFFFFFFFFFFFF
   end
   
+  it "can get and set bool socket options" do
+    subject.get_opt(ZMQ::IMMEDIATE).should eq false # Default value
+    subject.set_opt ZMQ::IMMEDIATE,           true
+    subject.get_opt(ZMQ::IMMEDIATE).should eq true
+  end
+  
   it "can set string socket options" do
     subject.set_opt ZMQ::SUBSCRIBE, 'topic.name'
   end
@@ -88,6 +97,19 @@ describe ZMQ::Socket do
     LibZMQ.should_receive(:zmq_close).at_least(:once)
     Proc.new { ZMQ::Socket.new(ZMQ::PULL) }.call
     GC.start
+  end
+  
+  it "can send and receive strings" do
+    push_sock.send_string 'testA1', ZMQ::SNDMORE
+    push_sock.send_string 'testA2'
+    push_sock.send_string 'testB'
+    
+    pull_sock.recv_string.should eq 'testA1'
+    pull_sock.get_opt(ZMQ::RCVMORE).should eq true
+    pull_sock.recv_string.should eq 'testA2'
+    pull_sock.get_opt(ZMQ::RCVMORE).should eq false
+    pull_sock.recv_string.should eq 'testB'
+    pull_sock.get_opt(ZMQ::RCVMORE).should eq false
   end
   
 end

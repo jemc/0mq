@@ -5,6 +5,8 @@ $IN_DEVELOPMENT = true
 # require 'pry-rescue/rspec' if $IN_DEVELOPMENT
 require 'timeout'
 
+Thread.abort_on_exception = true
+
 RSpec.configure do |c|
   if $IN_DEVELOPMENT
     
