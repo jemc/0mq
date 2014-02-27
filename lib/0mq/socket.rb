@@ -97,6 +97,24 @@ module ZMQ
       str
     end
     
+    # Send a multipart message as an array of strings
+    def send_array(ary)
+      last = ary.last
+      
+      ary[0...-1].each { |str| send_string str, ZMQ::SNDMORE }
+      send_string last
+    end
+    
+    # Receive a multipart message as an array of strings
+    def recv_array
+      [].tap do |ary|
+        loop do
+          ary << recv_string
+          break unless get_opt(ZMQ::RCVMORE)
+        end
+      end
+    end
+    
     # Set a socket option
     def set_opt(option, value)
       type = @@option_types.fetch(option) \

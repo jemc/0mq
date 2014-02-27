@@ -112,4 +112,9 @@ describe ZMQ::Socket do
     pull_sock.get_opt(ZMQ::RCVMORE).should eq false
   end
   
+  it "can send and receive multipart messages as arrays" do
+    push_sock.send_array           ['testA1', 'testA2']
+    pull_sock.recv_array.should eq ['testA1', 'testA2']
+  end
+  
 end
