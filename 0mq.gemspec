@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.homepage      = 'https://github.com/jemc/0mq/'
   s.licenses      = 'MIT'
   
-  s.add_dependency 'ffi-rzmq-core'
+  s.add_dependency 'ffi-rzmq-core', '~> 1.0'
   
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'rake'
