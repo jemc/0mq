@@ -10,6 +10,27 @@ module ZMQ
       @context = context
       @type = type
       @ptr = LibZMQ.zmq_socket @context.ptr, @type
+      
+      ObjectSpace.define_finalizer self,
+                                   self.class.finalizer(@socket, Process.pid)
+    end
+    
+    # Close the socket
+    def close
+      if @ptr
+        ObjectSpace.undefine_finalizer self
+        @temp_buffers.clear if @temp_buffers
+        
+        rc = LibZMQ.zmq_close @ptr
+        ZMQ.error_check true if rc!=0
+        
+        @ptr = nil
+      end
+    end
+    
+    # Create a safe finalizer for the socket ptr to close on GC of the object
+    def self.finalizer(ptr, pid)
+      Proc.new { LibZMQ.zmq_close ptr if Process.pid == pid }
     end
     
     # Get the socket type name as a symbol

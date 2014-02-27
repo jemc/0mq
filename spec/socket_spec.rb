@@ -78,4 +78,16 @@ describe ZMQ::Socket do
       raise_error Errno::EINVAL
   end
   
+  it "can close itself" do
+    subject.close
+    subject.ptr.should eq nil
+    expect { subject.get_opt ZMQ::AFFINITY }.to raise_error Errno::ENOTSOCK
+  end
+  
+  it "has a closing finalizer for the socket pointer" do
+    LibZMQ.should_receive(:zmq_close).at_least(:once)
+    Proc.new { ZMQ::Socket.new(ZMQ::PULL) }.call
+    GC.start
+  end
+  
 end
