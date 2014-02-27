@@ -13,19 +13,37 @@ describe ZMQ::Socket do
   its(:type_sym) { should eq :SUB }
   
   it "can bind to an endpoint" do
-    subject.bind 'ipc:///tmp/test2'
+    subject.bind 'ipc:///tmp/test'
   end
   
   it "will raise on a bad call to bind" do
     expect { subject.bind 'huh?://nope' }.to raise_error Errno::EPROTONOSUPPORT
   end
   
+  it "can unbind from an endpoint" do
+    subject.bind   'ipc:///tmp/test'
+    subject.unbind 'ipc:///tmp/test'
+  end
+  
+  it "will raise on a bad call to unbind" do
+    expect { subject.unbind 'ipc:///tmp/test' }.to raise_error Errno::ENOENT
+  end
+  
   it "can connect to an endpoint" do
-    subject.connect 'ipc:///tmp/test2'
+    subject.connect 'ipc:///tmp/test'
   end
   
   it "will raise on a bad call to connect" do
     expect { subject.connect 'huh?://?' }.to raise_error Errno::EPROTONOSUPPORT
+  end
+  
+  it "can disconnect from an endpoint" do
+    subject.connect    'ipc:///tmp/test'
+    subject.disconnect 'ipc:///tmp/test'
+  end
+  
+  it "will raise on a bad call to disconnect" do
+    expect { subject.disconnect 'ipc:///tmp/test' }.to raise_error Errno::ENOENT
   end
   
   it "can get and set int socket options" do
@@ -51,8 +69,8 @@ describe ZMQ::Socket do
   end
   
   it "can get string socket options" do
-    subject.bind 'ipc:///tmp/test2'
-    subject.get_opt(ZMQ::LAST_ENDPOINT).should eq 'ipc:///tmp/test2'
+    subject.bind 'ipc:///tmp/test'
+    subject.get_opt(ZMQ::LAST_ENDPOINT).should eq 'ipc:///tmp/test'
   end
   
   it "will raise on a bad call to set_opt" do

@@ -29,6 +29,18 @@ module ZMQ
       ZMQ.error_check true if rc!=0
     end
     
+    # Unbind from an endpoint
+    def unbind endpoint
+      rc = LibZMQ.zmq_unbind @ptr, endpoint
+      ZMQ.error_check true if rc!=0
+    end
+    
+    # Disconnect to an endpoint
+    def disconnect endpoint
+      rc = LibZMQ.zmq_disconnect @ptr, endpoint
+      ZMQ.error_check true if rc!=0
+    end
+    
     # Set a socket option
     def set_opt(option, value)
       type = @@option_types.fetch(option) \
