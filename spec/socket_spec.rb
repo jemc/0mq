@@ -10,6 +10,13 @@ describe ZMQ::Socket do
   let(:pull_sock) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/pp'} }
   let(:push_sock) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/pp'} }
   
+  let(:req_sock)  { ZMQ::Socket.new(ZMQ::REQ)   .tap{|s| s.connect 'ipc:///tmp/r1'} }
+  let(:rtr_sockp) { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r1'} }
+  let(:dlr_sockp) { ZMQ::Socket.new(ZMQ::DEALER).tap{|s| s.connect 'ipc:///tmp/r2'} }
+  let(:rtr_sock)  { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r2'} }
+  let(:proxy) { ZMQ::Proxy.new rtr_sockp, dlr_sockp }
+  let(:proxy_thread) { Thread.new { proxy.run } }
+  
   its(:ptr) { should be_a FFI::Pointer }
   its(:context) { should eq ZMQ::DefaultContext }
   its(:type) { should eq ZMQ::SUB }
@@ -115,6 +122,43 @@ describe ZMQ::Socket do
   it "can send and receive multipart messages as arrays" do
     push_sock.send_array           ['testA1', 'testA2']
     pull_sock.recv_array.should eq ['testA1', 'testA2']
+  end
+  
+  it "can receive multipart messages with separated routing info" do
+    proxy_thread
+    result = nil
+    
+    thr = Thread.new { req_sock.send_array ['test', 'body']
+                       result = req_sock.recv_array }
+    
+    routing, body = rtr_sock.recv_with_routing
+    routing.count.should eq 2
+    body.should eq ['test', 'body']
+    
+    rtr_sock.send_array [*routing, '', 'resulting', 'reply']
+    thr.join
+    result.should eq ['resulting', 'reply']
+    
+    proxy_thread.kill
+  end
+  
+  it "can send multipart messages with separated routing info" do
+    proxy_thread
+    result = nil
+    
+    thr = Thread.new { req_sock.send_array ['test', 'body']
+                       result = req_sock.recv_array }
+    
+    rt1, rt2, delim, *body = rtr_sock.recv_array
+    routing = [rt1, rt2]
+    delim.should eq ''
+    body.should eq ['test', 'body']
+    
+    rtr_sock.send_with_routing routing, ['resulting', 'reply']
+    thr.join
+    result.should eq ['resulting', 'reply']
+    
+    proxy_thread.kill
   end
   
 end

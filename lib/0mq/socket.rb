@@ -115,6 +115,35 @@ module ZMQ
       end
     end
     
+    # Send a multipart message as routing array and a body array
+    # All parts before an empty part are considered routing parts,
+    # and all parta after the empty part are considered body parts.
+    # The empty delimiter part should not be included in the input arrays.
+    def send_with_routing(routing, body)
+      send_array [*routing, '', *body]
+    end
+    
+    # Receive a multipart message as routing array and a body array
+    # All parts before an empty part are considered routing parts,
+    # and all parta after the empty part are considered body parts.
+    # The empty delimiter part is not included in the resulting arrays.
+    def recv_with_routing
+      [[],[]].tap do |routing, body|
+        loop do
+          nxt = recv_string
+          break if nxt.empty?
+          routing << nxt
+          raise ArgumentError, "Expected empty routing delimiter in "\
+                               "multipart message: #{routing}" \
+                                unless get_opt ZMQ::RCVMORE
+        end
+        loop do
+          body << recv_string
+          break unless get_opt(ZMQ::RCVMORE)
+        end
+      end
+    end
+    
     # Set a socket option
     def set_opt(option, value)
       type = @@option_types.fetch(option) \
