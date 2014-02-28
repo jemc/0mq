@@ -60,33 +60,49 @@ describe ZMQ::Socket do
     subject.get_opt(ZMQ::BACKLOG).should eq 100 # Default value
     subject.set_opt ZMQ::BACKLOG,           99
     subject.get_opt(ZMQ::BACKLOG).should eq 99
+    subject.backlog              .should eq 99
+    subject.backlog =                       100
+    subject.backlog              .should eq 100
   end
   
   it "can get and set int64 socket options" do
     subject.get_opt(ZMQ::MAXMSGSIZE).should eq -1 # Default value
     subject.set_opt ZMQ::MAXMSGSIZE,           0x7FFFFFFFFFFFFFFF
     subject.get_opt(ZMQ::MAXMSGSIZE).should eq 0x7FFFFFFFFFFFFFFF
+    subject.maxmsgsize              .should eq 0x7FFFFFFFFFFFFFFF
+    subject.maxmsgsize =                       -1
+    subject.maxmsgsize              .should eq -1
   end
   
   it "can get and set uint64 socket options" do
     subject.get_opt(ZMQ::AFFINITY).should eq 0 # Default value
     subject.set_opt ZMQ::AFFINITY,           0xFFFFFFFFFFFFFFFF
     subject.get_opt(ZMQ::AFFINITY).should eq 0xFFFFFFFFFFFFFFFF
+    subject.affinity              .should eq 0xFFFFFFFFFFFFFFFF
+    subject.affinity =                       0
+    subject.affinity              .should eq 0
   end
   
   it "can get and set bool socket options" do
     subject.get_opt(ZMQ::IMMEDIATE).should eq false # Default value
     subject.set_opt ZMQ::IMMEDIATE,           true
     subject.get_opt(ZMQ::IMMEDIATE).should eq true
+    subject.immediate              .should eq true
+    subject.immediate =                       false
+    subject.immediate              .should eq false
   end
   
   it "can set string socket options" do
-    subject.set_opt ZMQ::SUBSCRIBE, 'topic.name'
+    subject.set_opt ZMQ::SUBSCRIBE,   'topic.name'
+    subject.subscribe           'other.topic.name'
+    subject.set_opt ZMQ::UNSUBSCRIBE, 'topic.name'
+    subject.unsubscribe         'other.topic.name'
   end
   
   it "can get string socket options" do
     subject.bind 'ipc:///tmp/test'
     subject.get_opt(ZMQ::LAST_ENDPOINT).should eq 'ipc:///tmp/test'
+    subject.last_endpoint              .should eq 'ipc:///tmp/test'
   end
   
   it "will raise on a bad call to set_opt" do

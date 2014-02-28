@@ -200,88 +200,112 @@ module ZMQ
       ]
     end
     
-    @@option_types = {
-    # Get options
-      ZMQ::RCVMORE             => :bool,
-      ZMQ::RCVHWM              => :int,
-      ZMQ::AFFINITY            => :uint64,
-      ZMQ::IDENTITY            => :string,
-      ZMQ::RATE                => :int,
-      ZMQ::RECOVERY_IVL        => :int,
-      ZMQ::SNDBUF              => :int,
-      ZMQ::RCVBUF              => :int,
-      ZMQ::LINGER              => :int,
-      ZMQ::RECONNECT_IVL       => :int,
-      ZMQ::RECONNECT_IVL_MAX   => :int,
-      ZMQ::BACKLOG             => :int,
-      ZMQ::MAXMSGSIZE          => :int64,
-      ZMQ::MULTICAST_HOPS      => :int,
-      ZMQ::RCVTIMEO            => :int,
-      ZMQ::SNDTIMEO            => :int,
-      ZMQ::IPV6                => :bool,
-      ZMQ::IPV4ONLY            => :bool,
-      ZMQ::IMMEDIATE           => :bool,
-      ZMQ::FD                  => :int,
-      ZMQ::EVENTS              => :int,
-      ZMQ::LAST_ENDPOINT       => :string,
-      ZMQ::TCP_KEEPALIVE       => :int,
-      ZMQ::TCP_KEEPALIVE_IDLE  => :int,
-      ZMQ::TCP_KEEPALIVE_CNT   => :int,
-      ZMQ::TCP_KEEPALIVE_INTVL => :int,
-      ZMQ::MECHANISM           => :int,
-      ZMQ::PLAIN_SERVER        => :int,
-      ZMQ::PLAIN_USERNAME      => :string,
-      ZMQ::PLAIN_PASSWORD      => :string,
-      ZMQ::CURVE_PUBLICKEY     => :string,
-      ZMQ::CURVE_SECRETKEY     => :string,
-      ZMQ::CURVE_SERVERKEY     => :string,
-      ZMQ::ZAP_DOMAIN          => :string,
-    }.merge({
-    # Set options
-      ZMQ::SNDHWM              => :int,
-      ZMQ::RCVHWM              => :int,
-      ZMQ::AFFINITY            => :uint64,
-      ZMQ::SUBSCRIBE           => :string,
-      ZMQ::UNSUBSCRIBE         => :string,
-      ZMQ::IDENTITY            => :string,
-      ZMQ::RATE                => :int,
-      ZMQ::RECOVERY_IVL        => :int,
-      ZMQ::SNDBUF              => :int,
-      ZMQ::RCVBUF              => :int,
-      ZMQ::LINGER              => :int,
-      ZMQ::RECONNECT_IVL       => :int,
-      ZMQ::RECONNECT_IVL_MAX   => :int,
-      ZMQ::RECONNECT_IVL       => :int,
-      ZMQ::BACKLOG             => :int,
-      ZMQ::MAXMSGSIZE          => :int64,
-      ZMQ::MULTICAST_HOPS      => :int,
-      ZMQ::RCVTIMEO            => :int,
-      ZMQ::SNDTIMEO            => :int,
-      ZMQ::IPV6                => :bool,
-      ZMQ::IPV4ONLY            => :bool,
-      ZMQ::IMMEDIATE           => :bool,
-      ZMQ::ROUTER_HANDOVER     => :int,
-      ZMQ::ROUTER_MANDATORY    => :int,
-      ZMQ::ROUTER_RAW          => :int,
-      ZMQ::PROBE_ROUTER        => :int,
-      ZMQ::XPUB_VERBOSE        => :int,
-      ZMQ::REQ_CORRELATE       => :int,
-      ZMQ::REQ_RELAXED         => :int,
-      ZMQ::TCP_KEEPALIVE       => :int,
-      ZMQ::TCP_KEEPALIVE_IDLE  => :int,
-      ZMQ::TCP_KEEPALIVE_CNT   => :int,
-      ZMQ::TCP_KEEPALIVE_INTVL => :int,
-      ZMQ::TCP_ACCEPT_FILTER   => :string,
-      ZMQ::PLAIN_SERVER        => :int,
-      ZMQ::PLAIN_USERNAME      => :string,
-      ZMQ::PLAIN_PASSWORD      => :string,
-      ZMQ::CURVE_SERVER        => :int,
-      ZMQ::CURVE_PUBLICKEY     => :string,
-      ZMQ::CURVE_SECRETKEY     => :string,
-      ZMQ::CURVE_SERVERKEY     => :string,
-      ZMQ::ZAP_DOMAIN          => :string,
-      ZMQ::CONFLATE            => :bool,
-    })
+    @@get_options = {
+      :RCVMORE             => :bool,
+      :RCVHWM              => :int,
+      :AFFINITY            => :uint64,
+      :IDENTITY            => :string,
+      :RATE                => :int,
+      :RECOVERY_IVL        => :int,
+      :SNDBUF              => :int,
+      :RCVBUF              => :int,
+      :LINGER              => :int,
+      :RECONNECT_IVL       => :int,
+      :RECONNECT_IVL_MAX   => :int,
+      :BACKLOG             => :int,
+      :MAXMSGSIZE          => :int64,
+      :MULTICAST_HOPS      => :int,
+      :RCVTIMEO            => :int,
+      :SNDTIMEO            => :int,
+      :IPV6                => :bool,
+      :IPV4ONLY            => :bool,
+      :IMMEDIATE           => :bool,
+      :FD                  => :int,
+      :EVENTS              => :int,
+      :LAST_ENDPOINT       => :string,
+      :TCP_KEEPALIVE       => :int,
+      :TCP_KEEPALIVE_IDLE  => :int,
+      :TCP_KEEPALIVE_CNT   => :int,
+      :TCP_KEEPALIVE_INTVL => :int,
+      :MECHANISM           => :int,
+      :PLAIN_SERVER        => :int,
+      :PLAIN_USERNAME      => :string,
+      :PLAIN_PASSWORD      => :string,
+      :CURVE_PUBLICKEY     => :string,
+      :CURVE_SECRETKEY     => :string,
+      :CURVE_SERVERKEY     => :string,
+      :ZAP_DOMAIN          => :string,
+    }
+    
+    @@set_options = {
+      :SNDHWM              => :int,
+      :RCVHWM              => :int,
+      :AFFINITY            => :uint64,
+      :SUBSCRIBE           => :string,
+      :UNSUBSCRIBE         => :string,
+      :IDENTITY            => :string,
+      :RATE                => :int,
+      :RECOVERY_IVL        => :int,
+      :SNDBUF              => :int,
+      :RCVBUF              => :int,
+      :LINGER              => :int,
+      :RECONNECT_IVL       => :int,
+      :RECONNECT_IVL_MAX   => :int,
+      :RECONNECT_IVL       => :int,
+      :BACKLOG             => :int,
+      :MAXMSGSIZE          => :int64,
+      :MULTICAST_HOPS      => :int,
+      :RCVTIMEO            => :int,
+      :SNDTIMEO            => :int,
+      :IPV6                => :bool,
+      :IPV4ONLY            => :bool,
+      :IMMEDIATE           => :bool,
+      :ROUTER_HANDOVER     => :int,
+      :ROUTER_MANDATORY    => :int,
+      :ROUTER_RAW          => :int,
+      :PROBE_ROUTER        => :int,
+      :XPUB_VERBOSE        => :int,
+      :REQ_CORRELATE       => :int,
+      :REQ_RELAXED         => :int,
+      :TCP_KEEPALIVE       => :int,
+      :TCP_KEEPALIVE_IDLE  => :int,
+      :TCP_KEEPALIVE_CNT   => :int,
+      :TCP_KEEPALIVE_INTVL => :int,
+      :TCP_ACCEPT_FILTER   => :string,
+      :PLAIN_SERVER        => :int,
+      :PLAIN_USERNAME      => :string,
+      :PLAIN_PASSWORD      => :string,
+      :CURVE_SERVER        => :int,
+      :CURVE_PUBLICKEY     => :string,
+      :CURVE_SECRETKEY     => :string,
+      :CURVE_SERVERKEY     => :string,
+      :ZAP_DOMAIN          => :string,
+      :CONFLATE            => :bool,
+    }
+    
+    # Set up map of option codes to option types
+    @@option_types = {}
+    @@get_options.each_pair { |n,t| @@option_types[ZMQ.const_get(n)] = t }
+    @@set_options.each_pair { |n,t| @@option_types[ZMQ.const_get(n)] = t }
+    
+    p @@set_options.keys - @@get_options.keys
+    
+  public
+    
+    # Define the socket option reader methods
+    @@get_options.keys.each do |name|
+      code = ZMQ.const_get(name)
+      # Get the given socket option
+      define_method(name.downcase) { get_opt code }
+    end
+    
+    # Define the socket option writer methods
+    @@set_options.keys.each do |name|
+      code = ZMQ.const_get(name)
+      name = :"#{name}=" unless [:SUBSCRIBE, :UNSUBSCRIBE].include? name
+      # Set the given socket option
+      define_method(name.downcase) { |val| set_opt code, val }
+    end
     
   end
   
