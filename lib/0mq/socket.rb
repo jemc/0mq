@@ -8,8 +8,8 @@ module ZMQ
     attr_reader :context
     attr_reader :type
     
-    def initialize(type, context:ZMQ::DefaultContext)
-      @context = context
+    def initialize(type, opts={})
+      @context = opts.fetch :context, ZMQ::DefaultContext
       @type = type
       @ptr = LibZMQ.zmq_socket @context.ptr, @type
       
