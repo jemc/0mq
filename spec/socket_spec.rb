@@ -27,7 +27,7 @@ describe ZMQ::Socket do
   end
   
   it "will raise on a bad call to bind" do
-    expect { subject.bind 'huh?://nope' }.to raise_error Errno::EPROTONOSUPPORT
+    expect { subject.bind 'huh?://nope' }.to raise_error SystemCallError
   end
   
   it "can unbind from an endpoint" do
@@ -36,7 +36,7 @@ describe ZMQ::Socket do
   end
   
   it "will raise on a bad call to unbind" do
-    expect { subject.unbind 'ipc:///tmp/test' }.to raise_error Errno::ENOENT
+    expect { subject.unbind 'ipc:///tmp/test' }.to raise_error SystemCallError
   end
   
   it "can connect to an endpoint" do
@@ -44,7 +44,7 @@ describe ZMQ::Socket do
   end
   
   it "will raise on a bad call to connect" do
-    expect { subject.connect 'huh?://?' }.to raise_error Errno::EPROTONOSUPPORT
+    expect { subject.connect 'huh?://?' }.to raise_error SystemCallError
   end
   
   it "can disconnect from an endpoint" do
@@ -53,7 +53,7 @@ describe ZMQ::Socket do
   end
   
   it "will raise on a bad call to disconnect" do
-    expect { subject.disconnect 'ipc:///tmp/test' }.to raise_error Errno::ENOENT
+    expect { subject.disconnect 'ipc:///tmp/test' }.to raise_error SystemCallError
   end
   
   it "can get and set int socket options" do
@@ -107,13 +107,13 @@ describe ZMQ::Socket do
   
   it "will raise on a bad call to set_opt" do
     expect { subject.set_opt ZMQ::IDENTITY, "\x00 can't start with zero" }.to \
-      raise_error Errno::EINVAL
+      raise_error SystemCallError
   end
   
   it "can close itself" do
     subject.close
     subject.ptr.should eq nil
-    expect { subject.get_opt ZMQ::AFFINITY }.to raise_error Errno::ENOTSOCK
+    expect { subject.get_opt ZMQ::AFFINITY }.to raise_error SystemCallError
   end
   
   it "has a closing finalizer for the socket pointer" do
