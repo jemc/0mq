@@ -1,5 +1,5 @@
 before_install: sudo apt-get install libzmq3-dev
-script: bundle exec rspec
+script: sudo bundle exec rspec
 language: ruby
 rvm:
   - 1.9.3
