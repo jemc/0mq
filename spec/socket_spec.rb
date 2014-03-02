@@ -17,6 +17,15 @@ describe ZMQ::Socket do
   let(:proxy) { ZMQ::Proxy.new rtr_sockp, dlr_sockp }
   let(:proxy_thread) { Thread.new { proxy.run } }
   
+  after { # Tests may stall on some machines if the bound endpoints aren't freed
+    pull_sock.close
+    push_sock.close
+    req_sock.close
+    rtr_sockp.close
+    dlr_sockp.close
+    rtr_sock.close
+  }
+  
   its(:ptr) { should be_a FFI::Pointer }
   its(:context) { should eq ZMQ::DefaultContext }
   its(:type) { should eq ZMQ::SUB }
