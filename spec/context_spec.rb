@@ -10,4 +10,9 @@ describe ZMQ::Context do
     it { should be_a ZMQ::Context }
   end
   
+  it "can create a socket within the given context" do
+    socket = subject.socket ZMQ::ROUTER
+    socket.context.should be subject
+  end
+  
 end
