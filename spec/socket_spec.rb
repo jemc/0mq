@@ -17,6 +17,17 @@ describe ZMQ::Socket do
   let(:proxy) { ZMQ::Proxy.new rtr_sockp, dlr_sockp }
   let(:proxy_thread) { Thread.new { proxy.run } }
   
+  before {
+    # Bindings need to be started before connect, or connections may stall.
+    pull_sock
+    push_sock
+    
+    rtr_sockp
+    rtr_sock
+    req_sock
+    dlr_sockp
+  }
+  
   after { # Tests may stall on some machines if the bound endpoints aren't freed
     pull_sock.close
     push_sock.close
