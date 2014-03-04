@@ -10,10 +10,10 @@ describe ZMQ::Socket do
   let!(:pull_sock) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/pp'} }
   let!(:push_sock) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/pp'} }
   
-  let!(:req_sock)  { ZMQ::Socket.new(ZMQ::REQ)   .tap{|s| s.connect 'ipc:///tmp/r1'} }
-  let!(:rtr_sockp) { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r1'} }
-  let!(:dlr_sockp) { ZMQ::Socket.new(ZMQ::DEALER).tap{|s| s.connect 'ipc:///tmp/r2'} }
-  let!(:rtr_sock)  { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r2'} }
+  let!(:req_sock)  { ZMQ::Socket.new(ZMQ::REQ)   .tap{|s| s.bind    'ipc:///tmp/r1'} }
+  let!(:rtr_sockp) { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.connect 'ipc:///tmp/r1'} }
+  let!(:dlr_sockp) { ZMQ::Socket.new(ZMQ::DEALER).tap{|s| s.bind    'ipc:///tmp/r2'} }
+  let!(:rtr_sock)  { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.connect 'ipc:///tmp/r2'} }
   let(:proxy) { ZMQ::Proxy.new rtr_sockp, dlr_sockp }
   let(:proxy_thread) { Thread.new { proxy.run } }
   
