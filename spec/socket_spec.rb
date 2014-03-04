@@ -7,35 +7,15 @@ describe ZMQ::Socket do
   subject { ZMQ::Socket.new type }
   let(:type) { ZMQ::SUB }
   
-  let(:pull_sock) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/pp'} }
-  let(:push_sock) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/pp'} }
+  let!(:pull_sock) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/pp'} }
+  let!(:push_sock) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/pp'} }
   
-  let(:req_sock)  { ZMQ::Socket.new(ZMQ::REQ)   .tap{|s| s.connect 'ipc:///tmp/r1'} }
-  let(:rtr_sockp) { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r1'} }
-  let(:dlr_sockp) { ZMQ::Socket.new(ZMQ::DEALER).tap{|s| s.connect 'ipc:///tmp/r2'} }
-  let(:rtr_sock)  { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r2'} }
+  let!(:req_sock)  { ZMQ::Socket.new(ZMQ::REQ)   .tap{|s| s.connect 'ipc:///tmp/r1'} }
+  let!(:rtr_sockp) { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r1'} }
+  let!(:dlr_sockp) { ZMQ::Socket.new(ZMQ::DEALER).tap{|s| s.connect 'ipc:///tmp/r2'} }
+  let!(:rtr_sock)  { ZMQ::Socket.new(ZMQ::ROUTER).tap{|s| s.bind    'ipc:///tmp/r2'} }
   let(:proxy) { ZMQ::Proxy.new rtr_sockp, dlr_sockp }
   let(:proxy_thread) { Thread.new { proxy.run } }
-  
-  before {
-    # Bindings need to be started before connect, or connections may stall.
-    pull_sock
-    push_sock
-    
-    rtr_sockp
-    rtr_sock
-    req_sock
-    dlr_sockp
-  }
-  
-  after { # Tests may stall on some machines if the bound endpoints aren't freed
-    pull_sock.close
-    push_sock.close
-    req_sock.close
-    rtr_sockp.close
-    dlr_sockp.close
-    rtr_sock.close
-  }
   
   its(:ptr) { should be_a FFI::Pointer }
   its(:context) { should eq ZMQ::DefaultContext }
