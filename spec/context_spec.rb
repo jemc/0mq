@@ -12,10 +12,15 @@ describe ZMQ::Context do
   
   it "can terminate the context" do
     subject.terminate
+    subject.ptr.should eq nil
+    expect { subject.socket ZMQ::ROUTER }.to raise_error SystemCallError
   end
   
   it "can create a socket within the given context" do
     socket = subject.socket ZMQ::ROUTER
+    
+    socket.should be_a ZMQ::Socket
+    socket.type.should eq ZMQ::ROUTER
     socket.context.should be subject
   end
   

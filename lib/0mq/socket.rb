@@ -12,6 +12,7 @@ module ZMQ
       @context = opts.fetch :context, ZMQ::DefaultContext
       @type = type
       @ptr = LibZMQ.zmq_socket @context.ptr, @type
+      ZMQ.error_check true if @ptr.null?
       
       @msgptr = FFI::MemoryPointer.new LibZMQ::Message.size, 1, false
       

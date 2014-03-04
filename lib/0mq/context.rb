@@ -10,9 +10,12 @@ module ZMQ
     
     # Destroy the ØMQ context.
     def terminate
-      rc = LibZMQ.zmq_ctx_term @ptr
-      ZMQ.error_check true if rc == -1
-      nil
+      if @ptr
+        rc = LibZMQ.zmq_ctx_term @ptr
+        ZMQ.error_check true if rc == -1
+        
+        @ptr = nil
+      end
     end
     
     # Create a Socket within this context.
