@@ -168,10 +168,6 @@ describe ZMQ::Poll do
   end
   
   
-  context "event types:" do
-  end
-  
-  
   context "class poll method:" do
     
     subject { ZMQ::Poll }
