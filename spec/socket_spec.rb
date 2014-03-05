@@ -22,6 +22,9 @@ describe ZMQ::Socket do
   its(:type) { should eq ZMQ::SUB }
   its(:type_sym) { should eq :SUB }
   
+  around { |test| Timeout.timeout(1) {test.run} } # Timeout after 1 second
+  
+  
   it "can bind to an endpoint" do
     subject.bind 'ipc:///tmp/test'
   end

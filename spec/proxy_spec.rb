@@ -11,6 +11,9 @@ describe ZMQ::Proxy do
   
   subject { ZMQ::Proxy.new frontend, backend }
   
+  around { |test| Timeout.timeout(1) {test.run} } # Timeout after 1 second
+  
+  
   it "forwards messages through the frontend to the backend" do
     thr = Thread.new { subject.run }
     client.send_array            ['some', 'workload', 'data']
