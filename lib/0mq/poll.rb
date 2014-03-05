@@ -41,7 +41,7 @@ module ZMQ
       
       @poll_items = []
       @socks = {}
-      
+
       sockets.each { |socket| @socks[socket] = ZMQ::POLLIN }
       
       # Pull remaining sockets out of options hash and package into poll items.
@@ -78,8 +78,10 @@ module ZMQ
     # Returns a hash of ZMQ::Socket => revents (triggered event flags).
     # Each item of the hash is passed to the block, if provided.
     def run(&block)
+      return {} if @poll_items.empty?
+      
       # Convert seconds to miliseconds.
-      timeout = (@timeout * 1000).to_i if @timeout > 0
+      timeout = @timeout > 0 ? (@timeout * 1000).to_i : @timeout
       
       # Poll
       rc = LibZMQ::zmq_poll @poll_structs, @poll_items.count, timeout
@@ -92,7 +94,7 @@ module ZMQ
         .to_h
       
       # Pass triggered sockets to block.
-      triggered_items.each { |socket, revents| block.call socket, revents }
+      triggered_items.each { |socket, revents| block.call socket, revents } if block
       
       triggered_items
     end
