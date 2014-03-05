@@ -110,6 +110,18 @@ describe ZMQ::Poll do
         }.to_not raise_error
       end
       
+      it "implementes run_nonblock" do
+        expect {
+          Timeout.timeout(0.1) { ZMQ::Poll.new(pull_socket).run_nonblock }
+        }.to_not raise_error
+      end
+      
+      it "implements poll_nonblock" do
+        expect {
+          Timeout.timeout(0.1) { ZMQ::Poll.poll_nonblock pull_socket }
+        }.to_not raise_error
+      end
+      
     end
     
   end
@@ -128,6 +140,7 @@ describe ZMQ::Poll do
     subject { ZMQ::Poll }
     
     it { should respond_to :poll }
+    it { should respond_to :poll_nonblock }
     
     it "polls a socket" do
       push_socket.send_string 'test'

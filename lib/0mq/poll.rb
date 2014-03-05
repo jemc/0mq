@@ -18,6 +18,11 @@ module ZMQ
       new(*sockets).tap { |poll| poll.run(&block) }
     end
     
+    # Non-blocking version of poll.
+    def self.poll_nonblock(*sockets, &block)
+      self.poll *sockets, timeout: 0, &block
+    end
+    
     # Accepts a list of sockets to poll for events
     # (ZMQ::POLLIN, ZMQ::POLLOUT, ZMQ::POLLERR).
     # Default is to poll for input (ZMQ::POLLIN).
@@ -97,6 +102,12 @@ module ZMQ
       triggered_items.each { |socket, revents| block.call socket, revents } if block
       
       triggered_items
+    end
+    
+    # Non-blocking version of run.
+    def run_nonblock(&block)
+      @timeout = 0
+      run &block
     end
     
   end
