@@ -96,7 +96,8 @@ module ZMQ
       # (ZMQ::Socket => revents)
       triggered_items = @poll_items.select { |pi| pi.revents > 0 }
         .map { |pi| [@socket_lookup[pi.socket.address], pi.revents] }
-        .to_h
+      
+      triggered_items = Hash[triggered_items]
       
       # Pass triggered sockets to block.
       triggered_items.each { |socket, revents| block.call socket, revents } if block
