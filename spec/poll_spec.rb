@@ -128,6 +128,43 @@ describe ZMQ::Poll do
   
   
   context "return values:" do
+    
+    it "returns a hash of sockets ready for IO" do
+      pull2 = make_pull
+      sleep 0.01
+      
+      push_socket.send_string 'test'
+      push_socket.send_string 'test'
+      sleep 0.01
+      
+      results = ZMQ::Poll.new(pull_socket, pull2, push_socket => ZMQ::POLLOUT).run
+      
+      results.count.should eq 3
+      results[pull_socket].should eq ZMQ::POLLIN
+      results[pull2].should eq ZMQ::POLLIN
+      results[push_socket].should eq ZMQ::POLLOUT
+    end
+    
+    it "passes sockets ready for IO to a block" do
+      pull2 = make_pull
+      sleep 0.01
+      
+      push_socket.send_string 'test'
+      push_socket.send_string 'test'
+      sleep 0.01
+      
+      results = {}
+      ZMQ::Poll.new(pull_socket, pull2, push_socket => ZMQ::POLLOUT)
+        .run do |socket, events|
+          results[socket] = events
+        end
+      
+      results.count.should eq 3
+      results[pull_socket].should eq ZMQ::POLLIN
+      results[pull2].should eq ZMQ::POLLIN
+      results[push_socket].should eq ZMQ::POLLOUT
+    end
+    
   end
   
   
