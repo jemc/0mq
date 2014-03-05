@@ -4,6 +4,12 @@ module ZMQ
   # A mechanism for applications to multiplex input/output events
   # in a level-triggered fashion over a set of sockets.
   class Poll
+    # Timeout is specified in seconds.
+    # A value of 0 will return immediately (non-blocking), and
+    # a value of -1 will block indefinitely until an event has
+    # occurred. Fractions of a second are allowed.
+    # Timeout defaults to block indefinitely (-1).
+    attr_accessor :timeout
     
     # Construct a Poll object and start polling.
     # See #initialize for parameters.
@@ -21,10 +27,7 @@ module ZMQ
     # (my_socket => ZMQ::POLLIN | ZMQ::POLLOUT).
     # 
     # Timeout can be specified in seconds as a keyword arg.
-    # A value of 0 will return immediately (non-blocking), and
-    # a value of -1 will block indefinitely until an event has
-    # occurred. Fractions of a second are allowed.
-    # Timeout defaults to block indefinitely (-1).
+    # See the :timeout accessor.
     #
     # Does not poll until #run is called.
     #
