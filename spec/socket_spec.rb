@@ -150,6 +150,15 @@ describe ZMQ::Socket do
     pull_sock.recv_array.should eq ['testA1', 'testA2']
   end
   
+  it "send_array attempts an array conversion if the object is not an array" do
+    data = Object.new.tap {|obj|
+      obj.instance_eval { def to_a; [1,2,3,4]; end }
+    }
+    
+    push_sock.send_array           data
+    pull_sock.recv_array.should eq data.to_a.map {|i| i.to_s }
+  end
+  
   it "can receive multipart messages with separated routing info" do
     proxy_thread
     result = nil

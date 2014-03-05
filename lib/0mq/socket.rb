@@ -69,6 +69,7 @@ module ZMQ
     
     # Send a string to the socket
     def send_string(string, flags = 0)
+      string = string.to_s
       size = string.respond_to?(:bytesize) ? string.bytesize : string.size
       @msgbuf = LibC.malloc size
       @msgbuf.write_string string, size
@@ -101,11 +102,10 @@ module ZMQ
     end
     
     # Send a multipart message as an array of strings
-    def send_array(ary)
-      last = ary.last
-      
-      ary[0...-1].each { |str| send_string str, ZMQ::SNDMORE }
-      send_string last
+    def send_array(array)
+      array = array.to_a
+      array[0...-1].each { |str| send_string str, ZMQ::SNDMORE }
+      send_string array.last
     end
     
     # Receive a multipart message as an array of strings
