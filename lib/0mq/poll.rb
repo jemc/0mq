@@ -38,7 +38,7 @@ module ZMQ
       
       @timeout = opts.fetch :timeout, -1
       
-      poll_items = [] # TODO: Delete - stuff into socks hash.
+      poll_items = []
       socks = {}
       
       sockets.each { |socket| socks[socket] = ZMQ::POLLIN }
@@ -48,13 +48,19 @@ module ZMQ
       # Rejecting symbols allows duck-typed sockets to be included.
       socks.merge! opts.reject {|socket, events| socket.is_a? Symbol}
       
-      # Allocate space for C PollItem structs.
+      # Build table to reference ZMQ::Socket to its pointer's address.
+      # This is an easy way to reconnect PollItem to ZMQ::Socket without
+      # having to store multiple dimensions in the socks hash.
+      socket_lookup = {}
+      socks.each { |socket, event| socket_lookup[socket.ptr.address] = socket }
+      
+      # Allocate space for C PollItem (zmq_pollitem_t) structs.
       poll_pointer_array = FFI::MemoryPointer.new LibZMQ::PollItem, socks.count, true
       
       # Create the PollItem objects.
       # Initializing them within the FFI::MemoryPointer prevents having to copy
-      # the struct data to the pointer memory when polling, then back again to
-      # receive the revents flags.
+      # the struct data to the MemoryPointer when polling, then back again to
+      # retrieve the revents flags.
       i = 0
       socks.each do |socket, events|
         poll_items.push LibZMQ::PollItem.new(poll_pointer_array[i]).tap { |pi|
@@ -72,10 +78,19 @@ module ZMQ
       rc = LibZMQ::zmq_poll poll_pointer_array, poll_items.count, timeout
       ZMQ.error_check true if rc==-1
       
+      triggered_items = poll_items.select { |pi| pi.revents > 0 }
+      
+      triggered_hash = {}
+      triggered_items.each do |pi|
+        triggered_hash[socket_lookup[pi.socket.address]] = pi.revents
+      end
+      
       # Yield triggered sockets to block.
-      poll_items.each { |pi| block.call pi.socket, pi.revents if pi.revents > 0 }
+      triggered_hash.each { |socket, revents| block.call socket, revents }
       
       require 'pry'; binding.pry
+      
+      triggered_hash
     end
     
     # Start polling.
