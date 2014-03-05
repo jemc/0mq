@@ -33,17 +33,32 @@ module ZMQ
     def initialize(*sockets, &block)
       opts = sockets.last.is_a?(Hash) ? sockets.pop : {} # For Ruby 1.9
       
-      # Delete options from the hash. Remaining items will be socket/event pairs.
-      @timeout = opts.delete(:timeout) { -1 }
+      @timeout = opts.fetch :timeout, -1
+      
+      # Package sockets into poll items.
+      poll_items = sockets.map do |socket|
+        LibZMQ::PollItem.new.tap { |pi|
+          pi.socket = socket
+          pi.events = ZMQ::POLLIN
+        }
+      end
+      
+      # Pull remaining sockets out of options hash and package into poll items.
+      # Skip any option symbols in the hash -- they aren't sockets.
+      # Rejecting symbols allows duck-typed sockets to be included.
+      opts.reject {|socket, events| socket.is_a? Symbol}.each do |socket, events|
+        poll_items.push LibZMQ::PollItem.new.tap { |pi|
+          pi.socket = socket
+          pi.events = events
+        }
+      end
+      
+      puts "Timeout: #{@timeout}"
+      puts "OPTS: #{opts}"
+      poll_items.each {|i| puts "ITEM: #{i}\nFLAG:#{i.events}"}
       
       # Do this when calling the C object.
       # @timeout = (@timeout * 1000).to_i if @timeout > 0 # Convert seconds to miliseconds.
-      
-      p sockets
-        puts "\n"
-        # poll_items = sockets.map do |sock|
-        #   # LibZMQ::PollItem.new
-        # end
     end
     
     # Start polling.
