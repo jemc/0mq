@@ -5,6 +5,8 @@ require 'spec_helper'
 
 describe ZMQ::Poll do
   
+  subject { ZMQ::Poll.new pull_socket }
+  
   let!(:push_socket) {
     ZMQ::Socket.new(ZMQ::PUSH).tap do |s|
       s.bind 'ipc://poll_conn.ipc'
@@ -87,6 +89,29 @@ describe ZMQ::Poll do
   end
   
   context "initializer options:" do
+    
+    context "timeout:" do
+      
+      it "blocks indefinitely on timeout = -1" do
+        expect {
+          Timeout.timeout(0.1) { ZMQ::Poll.new(pull_socket, timeout: -1).run }
+        }.to raise_error Timeout::Error
+      end
+      
+      it "returns immediately on timeout = 0" do
+        expect {
+          Timeout.timeout(0.1) { ZMQ::Poll.new(pull_socket, timeout: 0).run }
+        }.to_not raise_error
+      end
+      
+      it "returns after timeout expiration" do
+        expect {
+          Timeout.timeout(0.1) { ZMQ::Poll.new(pull_socket, timeout: 0.01).run }
+        }.to_not raise_error
+      end
+      
+    end
+    
   end
   
   
