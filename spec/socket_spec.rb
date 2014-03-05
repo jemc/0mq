@@ -119,10 +119,17 @@ describe ZMQ::Socket do
     expect { subject.get_opt ZMQ::AFFINITY }.to raise_error SystemCallError
   end
   
-  it "has a closing finalizer for the socket pointer" do
+  it "sets up a closing finalizer for the socket pointer" do
+    finalizer = nil
+    ObjectSpace.should_receive :define_finalizer do |obj, proc|
+      obj.should be_a ZMQ::Socket
+      finalizer = proc
+    end
+    
+    ZMQ::Socket.new(ZMQ::PULL)
+    
     LibZMQ.should_receive(:zmq_close).at_least(:once)
-    Proc.new { ZMQ::Socket.new(ZMQ::PULL) }.call
-    GC.start
+    finalizer.call
   end
   
   it "can send and receive strings" do
