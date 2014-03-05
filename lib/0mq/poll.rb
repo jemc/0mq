@@ -44,7 +44,7 @@ module ZMQ
       end
       
       # Pull remaining sockets out of options hash and package into poll items.
-      # Skip any option symbols in the hash -- they aren't sockets.
+      # Skip any option symbols in the hash; they aren't sockets.
       # Rejecting symbols allows duck-typed sockets to be included.
       opts.reject {|socket, events| socket.is_a? Symbol}.each do |socket, events|
         poll_items.push LibZMQ::PollItem.new.tap { |pi|
@@ -53,12 +53,23 @@ module ZMQ
         }
       end
       
-      puts "Timeout: #{@timeout}"
-      puts "OPTS: #{opts}"
-      poll_items.each {|i| puts "ITEM: #{i}\nFLAG:#{i.events}"}
+      # Convert seconds to miliseconds.
+      timeout = (@timeout * 1000).to_i if @timeout > 0
       
-      # Do this when calling the C object.
-      # @timeout = (@timeout * 1000).to_i if @timeout > 0 # Convert seconds to miliseconds.
+      # Package PollItem array into a C array of pointers.
+      poll_pointer_array = FFI::MemoryPointer.new FFI::Pointer, poll_items.count, true
+      poll_pointer_array.write_array_of_pointer poll_items.map &:to_ptr
+      
+      # TODO: Delete this. Replaced by write_array_of_pointer
+      # poll_items.count.times do |i|
+      #   poll_pointer_array[i].write_pointer poll_items[i].to_ptr
+      # end
+      
+      # Poll
+      rc = LibZMQ::zmq_poll poll_pointer_array, poll_items.count, timeout
+      # ZMQ.error_check true if rc==-1
+      
+      require 'pry'; binding.pry
     end
     
     # Start polling.
