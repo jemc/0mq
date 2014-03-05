@@ -73,6 +73,17 @@ module ZMQ
       rc = LibZMQ::zmq_poll poll_pointer_array, poll_items.count, timeout
       ZMQ.error_check true if rc==-1
       
+      # Copy the results back to the PollItems.
+      offset = 0
+      poll_items.count.times do |i|
+        poll_item_size = LibZMQ::PollItem.size
+        LibC.memcpy poll_items[i], poll_pointer_array + offset, poll_item_size
+        offset += poll_item_size
+      end
+      
+      # Yield triggered sockets to block.
+      poll_items.each { |pi| block.call pi.socket, pi.revents if pi.revents > 0 }
+      
       # require 'pry'; binding.pry
     end
     
@@ -99,6 +110,13 @@ module LibZMQ
     # Event flags are bitmasked.
     def events=(flags)
       self[:events] = flags
+    end
+    
+    # Get requested events that triggered:
+    # ZMQ::POLLIN, ZMQ::POLLOUT, ZMQ::POLLERR.
+    # Event flags are bitmasked.
+    def revents
+      self[:revents]
     end
     
     # Set the socket to poll for events on.

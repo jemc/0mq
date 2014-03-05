@@ -14,7 +14,9 @@ describe ZMQ::Poll do
       ZMQ::Socket.new(ZMQ::ROUTER),
       ZMQ::Socket.new(ZMQ::ROUTER) => ZMQ::POLLIN,
       ZMQ::Socket.new(ZMQ::ROUTER) => ZMQ::POLLOUT,
-      timeout: 1
+      timeout: 1 do |socket, events|
+        puts "socket: #{socket}\nevents:#{events}"
+      end
     
     # s1 = ZMQ::Socket.new ZMQ::ROUTER
     # s2 = ZMQ::Socket.new ZMQ::ROUTER
