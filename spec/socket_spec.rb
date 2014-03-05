@@ -145,12 +145,30 @@ describe ZMQ::Socket do
     pull_sock.get_opt(ZMQ::RCVMORE).should eq false
   end
   
+  it "will do a string conversion if the message is not a string" do
+    data = Object.new.tap {|obj|
+      obj.instance_eval { def to_s; "string"; end }
+    }
+    
+    push_sock.send_string           data
+    pull_sock.recv_string.should eq data.to_s
+  end
+  
   it "can send and receive multipart messages as arrays" do
     push_sock.send_array           ['testA1', 'testA2']
     pull_sock.recv_array.should eq ['testA1', 'testA2']
   end
   
-  it "send_array attempts an array conversion if the object is not an array" do
+  it "will do an array conversion if the multipart message is not an array" do
+    data = Object.new.tap {|obj|
+      obj.instance_eval { def to_a; ["part1","part2","part3"]; end }
+    }
+    
+    push_sock.send_array           data
+    pull_sock.recv_array.should eq data.to_a
+  end
+  
+  it "will do both array and string conversion when necessary" do
     data = Object.new.tap {|obj|
       obj.instance_eval { def to_a; [1,2,3,4]; end }
     }
