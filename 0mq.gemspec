@@ -1,8 +1,8 @@
 
 Gem::Specification.new do |s|
   s.name          = '0mq'
-  s.version       = '0.1.2'
-  s.date          = '2014-03-03'
+  s.version       = '0.2.0'
+  s.date          = '2014-03-04'
   s.summary       = "0mq"
   s.description   = "A Ruby-like wrapper for ffi-rzmq-core (ZeroMQ)"
   s.authors       = ["Joe McIlvain", "Alex McLain"]
