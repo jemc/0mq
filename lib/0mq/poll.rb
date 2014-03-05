@@ -78,19 +78,16 @@ module ZMQ
       rc = LibZMQ::zmq_poll poll_pointer_array, poll_items.count, timeout
       ZMQ.error_check true if rc==-1
       
+      # Create a hash of the items with triggered events.
+      # (ZMQ::Socket => revents)
       triggered_items = poll_items.select { |pi| pi.revents > 0 }
+        .map { |pi| [socket_lookup[pi.socket.address], pi.revents] }
+        .to_h
       
-      triggered_hash = {}
-      triggered_items.each do |pi|
-        triggered_hash[socket_lookup[pi.socket.address]] = pi.revents
-      end
+      # Pass triggered sockets to block.
+      triggered_items.each { |socket, revents| block.call socket, revents }
       
-      # Yield triggered sockets to block.
-      triggered_hash.each { |socket, revents| block.call socket, revents }
-      
-      require 'pry'; binding.pry
-      
-      triggered_hash
+      triggered_items
     end
     
     # Start polling.
