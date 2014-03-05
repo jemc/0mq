@@ -38,53 +38,44 @@ module ZMQ
       
       @timeout = opts.fetch :timeout, -1
       
-      # Package sockets into poll items.
-      poll_items = sockets.map do |socket|
-        LibZMQ::PollItem.new.tap { |pi|
-          pi.socket = socket
-          pi.events = ZMQ::POLLIN
-        }
-      end
+      poll_items = [] # TODO: Delete - stuff into socks hash.
+      socks = {}
+      
+      sockets.each { |socket| socks[socket] = ZMQ::POLLIN }
       
       # Pull remaining sockets out of options hash and package into poll items.
       # Skip any option symbols in the hash; they aren't sockets.
       # Rejecting symbols allows duck-typed sockets to be included.
-      opts.reject {|socket, events| socket.is_a? Symbol}.each do |socket, events|
-        poll_items.push LibZMQ::PollItem.new.tap { |pi|
+      socks.merge! opts.reject {|socket, events| socket.is_a? Symbol}
+      
+      # Allocate space for C PollItem structs.
+      poll_pointer_array = FFI::MemoryPointer.new LibZMQ::PollItem, socks.count, true
+      
+      # Create the PollItem objects.
+      # Initializing them within the FFI::MemoryPointer prevents having to copy
+      # the struct data to the pointer memory when polling, then back again to
+      # receive the revents flags.
+      i = 0
+      socks.each do |socket, events|
+        poll_items.push LibZMQ::PollItem.new(poll_pointer_array[i]).tap { |pi|
           pi.socket = socket
           pi.events = events
         }
+        
+        i += 1
       end
       
       # Convert seconds to miliseconds.
       timeout = (@timeout * 1000).to_i if @timeout > 0
       
-      # Package PollItem array into a C array of pointers.
-      poll_pointer_array = FFI::MemoryPointer.new LibZMQ::PollItem, poll_items.count, true
-      
-      offset = 0
-      poll_items.count.times do |i|
-        poll_item_size = LibZMQ::PollItem.size
-        LibC.memcpy poll_pointer_array + offset, poll_items[i].to_ptr, poll_item_size
-        offset += poll_item_size
-      end
-      
       # Poll
       rc = LibZMQ::zmq_poll poll_pointer_array, poll_items.count, timeout
       ZMQ.error_check true if rc==-1
       
-      # Copy the results back to the PollItems.
-      offset = 0
-      poll_items.count.times do |i|
-        poll_item_size = LibZMQ::PollItem.size
-        LibC.memcpy poll_items[i], poll_pointer_array + offset, poll_item_size
-        offset += poll_item_size
-      end
-      
       # Yield triggered sockets to block.
       poll_items.each { |pi| block.call pi.socket, pi.revents if pi.revents > 0 }
       
-      # require 'pry'; binding.pry
+      require 'pry'; binding.pry
     end
     
     # Start polling.
