@@ -60,19 +60,20 @@ module ZMQ
       timeout = (@timeout * 1000).to_i if @timeout > 0
       
       # Package PollItem array into a C array of pointers.
-      poll_pointer_array = FFI::MemoryPointer.new FFI::Pointer, poll_items.count, true
-      poll_pointer_array.write_array_of_pointer poll_items.map &:to_ptr
+      poll_pointer_array = FFI::MemoryPointer.new LibZMQ::PollItem, poll_items.count, true
       
-      # TODO: Delete this. Replaced by write_array_of_pointer
-      # poll_items.count.times do |i|
-      #   poll_pointer_array[i].write_pointer poll_items[i].to_ptr
-      # end
+      offset = 0
+      poll_items.count.times do |i|
+        poll_item_size = LibZMQ::PollItem.size
+        LibC.memcpy poll_pointer_array + offset, poll_items[i].to_ptr, poll_item_size
+        offset += poll_item_size
+      end
       
       # Poll
       rc = LibZMQ::zmq_poll poll_pointer_array, poll_items.count, timeout
-      # ZMQ.error_check true if rc==-1
+      ZMQ.error_check true if rc==-1
       
-      require 'pry'; binding.pry
+      # require 'pry'; binding.pry
     end
     
     # Start polling.
