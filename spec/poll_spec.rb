@@ -1,5 +1,4 @@
 
-require 'timeout'
 require 'spec_helper'
 
 
