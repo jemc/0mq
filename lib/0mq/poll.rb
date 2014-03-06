@@ -15,7 +15,8 @@ module ZMQ
     # See #initialize for parameters.
     # See #run for block and return value.
     def self.poll(*sockets, &block)
-      new(*sockets).tap { |poll| poll.run(&block) }
+      poller = new *sockets
+      poller.run &block
     end
     
     # Non-blocking version of poll.
@@ -90,7 +91,7 @@ module ZMQ
       
       # Poll
       rc = LibZMQ::zmq_poll @poll_structs, @poll_items.count, timeout
-      ZMQ.error_check true if rc==-1
+      ZMQ.error_check true if rc == -1
       
       # Create a hash of the items with triggered events.
       # (ZMQ::Socket => revents)

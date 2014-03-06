@@ -178,8 +178,7 @@ describe ZMQ::Poll do
       push_socket.send_string 'test'
       sleep 0.01
       
-      subject.poll(pull_socket)
-        .tap { |p| p.run.count.should eq 1 }
+      subject.poll(pull_socket).count.should eq 1
     end
     
   end
