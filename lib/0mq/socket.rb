@@ -3,6 +3,8 @@ require_relative 'socket/options'
 
 module ZMQ
   
+  # See http://api.zeromq.org/4-0:zmq-socket
+  # Not thread safe.
   class Socket
     
     # The FFI pointer to the socket.

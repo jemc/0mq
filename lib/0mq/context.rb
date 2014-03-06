@@ -1,6 +1,8 @@
 
 module ZMQ
   
+  # The context object encapsulates all the global state associated
+  # with the library. 
   class Context
     
     # The FFI pointer to the context.
@@ -35,6 +37,7 @@ module ZMQ
     
   end
   
+  # The default context to be used if another context is not provided.
   DefaultContext = Context.new
   
 end

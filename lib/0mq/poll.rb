@@ -115,7 +115,10 @@ module ZMQ
 end
 
 
+# :nodoc:
 module LibZMQ
+  
+  # :nodoc:
   class PollItem
     
     # Get the event flags:

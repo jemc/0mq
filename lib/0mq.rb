@@ -8,3 +8,6 @@ require_relative '0mq/proxy'
 require_relative '0mq/poll'
 require_relative '0mq/curve'
 require_relative '0mq/version'
+
+# :nodoc:
+module ZMQ; end

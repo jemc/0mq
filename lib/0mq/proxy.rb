@@ -1,8 +1,15 @@
 
 module ZMQ
   
+  # The proxy connects a frontend socket to a backend socket. Conceptually,
+  # data flows from frontend to backend. Depending on the socket types,
+  # replies may flow in the opposite direction. The direction is conceptual
+  # only; the proxy is fully symmetric and there is no technical difference
+  # between frontend and backend.
   class Proxy
     
+    # Accepts a frontend, backend, and optional capture socket.
+    # See http://api.zeromq.org/4-0:zmq-proxy
     def initialize(frontend, backend, capture = nil)
       @frontend = frontend.nil? ? nil : frontend.to_ptr
       @backend  = backend.nil?  ? nil : backend.to_ptr
