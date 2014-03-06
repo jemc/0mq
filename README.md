@@ -1,4 +1,5 @@
 # 0mq
+_Works like ZeroMQ. Feels like Ruby._
 
 [![Build Status](https://travis-ci.org/jemc/0mq.png)](https://travis-ci.org/jemc/0mq)
 [![Gem Version](https://badge.fury.io/rb/0mq.png)](http://badge.fury.io/rb/0mq)
