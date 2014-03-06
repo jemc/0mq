@@ -33,12 +33,66 @@ module ZMQ
       
       # :nodoc:
       def to_s
-        "#{@version[:major]}.#{@version[:minor]}.#{@version[:patch]}"
+        "#{major}.#{minor}.#{patch}"
       end
       
       # :nodoc:
       def inspect
         "#{super} \"#{to_s}\""
+      end
+      
+      # Compare this version to another version.
+      # Examples: "4.0.3", "3.2", "3", 3
+      def <=>(value)
+        expression = /(?<major>\d+)(\.(?<minor>\d+))?(\.(?<patch>\d+))?/
+        
+        # Convert both versions into an array of [major, minor, patch].
+        this_version = self.to_s
+        other_version = value.to_s
+        
+        this_version =~ expression
+        this_set = $~.captures.map &:to_i
+        
+        other_version =~ expression
+        other_set = $~.captures.map &:to_i
+        
+        # Compare each section (major/minor/patch) of the version number.
+        this_set.count.times do |i|
+          return  1 if this_set[i] > other_set[i]
+          return -1 if this_set[i] < other_set[i]
+        end
+        
+        0 # If the iterator didn't return, the versions are equal.
+      end
+      
+      # :nodoc:
+      def ==(value)
+        (self <=> value) == 0 ? true : false
+      end
+      
+      # :nodoc:
+      def !=(value)
+        (self <=> value) != 0 ? true : false
+      end
+      
+      # :nodoc:
+      def >(value)
+        (self <=> value) == 1 ? true : false
+      end
+      
+      # :nodoc:
+      def >=(value)
+        (self <=> value) != -1 ? true : false
+      end
+      
+      # :nodoc:
+      def <(value)
+        (self <=> value) == -1 ? true : false
+      end
+      
+      # :nodoc:
+      def <=(value)
+        (self <=> value) != 1 ? true : false
       end
       
     end
