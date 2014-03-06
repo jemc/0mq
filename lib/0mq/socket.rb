@@ -4,15 +4,19 @@ require_relative 'socket/options'
 module ZMQ
   
   class Socket
-    attr_reader :ptr
+    
+    # The FFI pointer to the socket.
+    attr_reader :pointer
+    # The socket's ZMQ::Context.
     attr_reader :context
+    # The socket's ZeroMQ socket type (e.g. ZMQ::ROUTER).
     attr_reader :type
     
     def initialize(type, opts={})
       @context = opts.fetch :context, ZMQ::DefaultContext
       @type = type
-      @ptr = LibZMQ.zmq_socket @context.ptr, @type
-      ZMQ.error_check true if @ptr.null?
+      @pointer = LibZMQ.zmq_socket @context.pointer, @type
+      ZMQ.error_check true if @pointer.null?
       
       @msgptr = FFI::MemoryPointer.new LibZMQ::Message.size, 1, false
       
@@ -22,20 +26,20 @@ module ZMQ
     
     # Close the socket
     def close
-      if @ptr
+      if @pointer
         ObjectSpace.undefine_finalizer self
         @temp_buffers.clear if @temp_buffers
         
-        rc = LibZMQ.zmq_close @ptr
+        rc = LibZMQ.zmq_close @pointer
         ZMQ.error_check true if rc==-1
         
-        @ptr = nil
+        @pointer = nil
       end
     end
     
-    # Create a safe finalizer for the socket ptr to close on GC of the object
-    def self.finalizer(ptr, pid)
-      Proc.new { LibZMQ.zmq_close ptr if Process.pid == pid }
+    # Create a safe finalizer for the socket pointer to close on GC of the object
+    def self.finalizer(pointer, pid)
+      Proc.new { LibZMQ.zmq_close pointer if Process.pid == pid }
     end
     
     # Get the socket type name as a symbol
@@ -45,25 +49,25 @@ module ZMQ
     
     # Bind to an endpoint
     def bind(endpoint)
-      rc = LibZMQ.zmq_bind @ptr, endpoint
+      rc = LibZMQ.zmq_bind @pointer, endpoint
       ZMQ.error_check true if rc==-1
     end
     
     # Connect to an endpoint
     def connect(endpoint)
-      rc = LibZMQ.zmq_connect @ptr, endpoint
+      rc = LibZMQ.zmq_connect @pointer, endpoint
       ZMQ.error_check true if rc==-1
     end
     
     # Unbind from an endpoint
     def unbind(endpoint)
-      rc = LibZMQ.zmq_unbind @ptr, endpoint
+      rc = LibZMQ.zmq_unbind @pointer, endpoint
       ZMQ.error_check true if rc==-1
     end
     
     # Disconnect to an endpoint
     def disconnect(endpoint)
-      rc = LibZMQ.zmq_disconnect @ptr, endpoint
+      rc = LibZMQ.zmq_disconnect @pointer, endpoint
       ZMQ.error_check true if rc==-1
     end
     
@@ -77,7 +81,7 @@ module ZMQ
       rc = LibZMQ.zmq_msg_init_data @msgptr, @msgbuf, size, LibC::Free, nil
       ZMQ.error_check true if rc==-1
       
-      rc = LibZMQ.zmq_sendmsg @ptr, @msgptr, flags
+      rc = LibZMQ.zmq_sendmsg @pointer, @msgptr, flags
       ZMQ.error_check true if rc==-1
       
       rc = LibZMQ.zmq_msg_close @msgptr
@@ -89,7 +93,7 @@ module ZMQ
       rc = LibZMQ.zmq_msg_init @msgptr
       ZMQ.error_check true if rc==-1
       
-      rc = LibZMQ.zmq_recvmsg @ptr, @msgptr, flags
+      rc = LibZMQ.zmq_recvmsg @pointer, @msgptr, flags
       ZMQ.error_check true if rc==-1
       
       str = LibZMQ.zmq_msg_data(@msgptr)
@@ -163,7 +167,7 @@ module ZMQ
         value = valptr
       end
       
-      rc = LibZMQ.zmq_setsockopt @ptr, option, value, value.size
+      rc = LibZMQ.zmq_setsockopt @pointer, option, value, value.size
       ZMQ.error_check true if rc==-1
       
       value
@@ -176,7 +180,7 @@ module ZMQ
       
       value, size = get_opt_pointers type
       
-      rc = LibZMQ.zmq_getsockopt @ptr, option, value, size
+      rc = LibZMQ.zmq_getsockopt @pointer, option, value, size
       ZMQ.error_check true if rc==-1
       
       if type == :string
@@ -186,6 +190,11 @@ module ZMQ
       else
         value.send :"read_#{type}"
       end
+    end
+    
+    # Returns the socket's FFI pointer.
+    def to_ptr
+      @pointer
     end
     
   private

@@ -4,14 +4,15 @@ require 'spec_helper'
 
 describe ZMQ::Context do
   
-  its(:ptr) { should be_a FFI::Pointer }
+  its(:pointer) { should be_a FFI::Pointer }
+  its(:to_ptr)  { should be_a FFI::Pointer }
   
   around { |test| Timeout.timeout(1) {test.run} } # Timeout after 1 second
   
   
   it "can terminate the context" do
     subject.terminate
-    subject.ptr.should eq nil
+    subject.pointer.should eq nil
     expect { subject.socket ZMQ::ROUTER }.to raise_error SystemCallError
   end
   

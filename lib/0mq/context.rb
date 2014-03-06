@@ -2,21 +2,23 @@
 module ZMQ
   
   class Context
-    attr_reader :ptr
+    
+    # The FFI pointer to the context.
+    attr_reader :pointer
     
     def initialize
-      @ptr = LibZMQ.zmq_ctx_new
+      @pointer = LibZMQ.zmq_ctx_new
     end
     
     # Destroy the ØMQ context.
     def terminate
-      if @ptr
+      if @pointer
         rc = LibZMQ.version4?       ? 
-          LibZMQ.zmq_ctx_term(@ptr) : 
-          LibZMQ.zmq_term(@ptr)
+          LibZMQ.zmq_ctx_term(@pointer) : 
+          LibZMQ.zmq_term(@pointer)
         ZMQ.error_check true if rc == -1
         
-        @ptr = nil
+        @pointer = nil
       end
     end
     
@@ -24,6 +26,11 @@ module ZMQ
     def socket(type, opts={})
       opts[:context] = self
       ZMQ::Socket.new type, opts
+    end
+    
+    # Returns the context's FFI pointer.
+    def to_ptr
+      @pointer
     end
     
   end

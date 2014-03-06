@@ -4,9 +4,9 @@ module ZMQ
   class Proxy
     
     def initialize(frontend, backend, capture = nil)
-      @frontend = frontend.nil? ? nil : frontend.ptr
-      @backend  = backend.nil?  ? nil : backend.ptr
-      @capture  = capture.nil?  ? nil : capture.ptr
+      @frontend = frontend.nil? ? nil : frontend.to_ptr
+      @backend  = backend.nil?  ? nil : backend.to_ptr
+      @capture  = capture.nil?  ? nil : capture.to_ptr
     end
     
     # Block the current thread with the event loop of the proxy

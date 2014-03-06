@@ -58,7 +58,7 @@ module ZMQ
       # This is an easy way to reconnect PollItem to ZMQ::Socket without
       # having to store multiple dimensions in the socks hash.
       @socket_lookup = {}
-      @socks.each { |socket, event| @socket_lookup[socket.ptr.address] = socket }
+      @socks.each { |socket, event| @socket_lookup[socket.to_ptr.address] = socket }
       
       # Allocate space for C PollItem (zmq_pollitem_t) structs.
       @poll_structs = FFI::MemoryPointer.new LibZMQ::PollItem, @socks.count, true
@@ -142,7 +142,7 @@ module LibZMQ
     # Set the socket to poll for events on.
     # Accepts a ZMQ::Socket or a pointer.
     def socket=(sock)
-      self[:socket] = sock.is_a?(FFI::Pointer) ? sock : sock.ptr
+      self[:socket] = sock.is_a?(FFI::Pointer) ? sock : sock.to_ptr
     end
     
   end

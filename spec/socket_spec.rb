@@ -17,7 +17,8 @@ describe ZMQ::Socket do
   let(:proxy) { ZMQ::Proxy.new rtr_sockp, dlr_sockp }
   let(:proxy_thread) { Thread.new { proxy.run } }
   
-  its(:ptr) { should be_a FFI::Pointer }
+  its(:pointer) { should be_a FFI::Pointer }
+  its(:to_ptr)  { should be_a FFI::Pointer }
   its(:context) { should eq ZMQ::DefaultContext }
   its(:type) { should eq ZMQ::SUB }
   its(:type_sym) { should eq :SUB }
@@ -115,7 +116,7 @@ describe ZMQ::Socket do
   
   it "can close itself" do
     subject.close
-    subject.ptr.should eq nil
+    subject.pointer.should eq nil
     expect { subject.get_opt ZMQ::AFFINITY }.to raise_error SystemCallError
   end
   
