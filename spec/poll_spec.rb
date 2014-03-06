@@ -18,6 +18,8 @@ describe ZMQ::Poll do
     end
   }
   
+  after { File.delete 'poll_conn.ipc' if File.exists? 'poll_conn.ipc' }
+  
   around { |test| Timeout.timeout(0.25) {test.run} }
   
   

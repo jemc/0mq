@@ -4,10 +4,11 @@ require 'spec_helper'
 
 describe ZMQ::Proxy do
   
-  let(:client)  { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/f'} }
-  let(:frontend){ ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/f'} }
-  let(:backend) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.bind    'ipc:///tmp/b'} }
-  let(:service) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.connect 'ipc:///tmp/b'} }
+  
+  let!(:frontend){ ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/f'} }
+  let!(:backend) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.bind    'ipc:///tmp/b'} }
+  let!(:client)  { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/f'} }
+  let!(:service) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.connect 'ipc:///tmp/b'} }
   
   subject { ZMQ::Proxy.new frontend, backend }
   
