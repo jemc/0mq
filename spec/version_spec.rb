@@ -67,9 +67,82 @@ describe 'ZMQ::Version' do
       specify { (subject <=> higher_version).should eq -1 }
     end
     
+    
     context "comparison operators:" do
-      specify { (subject >  "3.2").should eq true }
-      specify { (subject >= "3.2").should eq true }
+      specify { (subject == "4").should eq     true }
+      specify { (subject == "4.0").should eq   true }
+      specify { (subject == "4.0.3").should eq true }
+      
+      specify { (subject == "3").should eq     false }
+      specify { (subject == "3.2").should eq   false }
+      specify { (subject == "3.2.0").should eq false }
+      
+      specify { (subject == "4.1").should eq   false }
+      specify { (subject == "4.0.4").should eq false }
+      
+      
+      specify { (subject != "4").should eq     false }
+      specify { (subject != "4.0").should eq   false }
+      specify { (subject != "4.0.3").should eq false }
+      
+      specify { (subject != "3").should eq     true }
+      specify { (subject != "3.2").should eq   true }
+      specify { (subject != "3.2.0").should eq true }
+      
+      specify { (subject != "4.1").should eq   true }
+      specify { (subject != "4.0.4").should eq true }
+      
+      
+      specify { (subject >  "3").should eq     true }
+      specify { (subject >  "3.2").should eq   true }
+      specify { (subject >  "3.2.0").should eq true }
+      
+      specify { (subject >  "4").should eq     false }
+      specify { (subject >  "4.0").should eq   false }
+      specify { (subject >  "4.0.3").should eq false }
+      
+      specify { (subject >  "5").should eq     false }
+      specify { (subject >  "5.1").should eq   false }
+      specify { (subject >  "5.1.2").should eq false }
+      
+      
+      specify { (subject >= "3").should eq     true }
+      specify { (subject >= "3.2").should eq   true }
+      specify { (subject >= "3.2.0").should eq true }
+      
+      specify { (subject >= "4").should eq     true }
+      specify { (subject >= "4.0").should eq   true }
+      specify { (subject >= "4.0.3").should eq true }
+      
+      specify { (subject >= "5").should eq     false }
+      specify { (subject >= "5.1").should eq   false }
+      specify { (subject >= "5.1.2").should eq false }
+      
+      
+      specify { (subject <  "3").should eq     false }
+      specify { (subject <  "3.2").should eq   false }
+      specify { (subject <  "3.2.0").should eq false }
+      
+      specify { (subject <  "4").should eq     false }
+      specify { (subject <  "4.0").should eq   false }
+      specify { (subject <  "4.0.3").should eq false }
+      
+      specify { (subject <  "5").should eq     true }
+      specify { (subject <  "5.1").should eq   true }
+      specify { (subject <  "5.1.2").should eq true }
+      
+      
+      specify { (subject <= "3").should eq     false }
+      specify { (subject <= "3.2").should eq   false }
+      specify { (subject <= "3.2.0").should eq false }
+      
+      specify { (subject <= "4").should eq     true }
+      specify { (subject <= "4.0").should eq   true }
+      specify { (subject <= "4.0.3").should eq true }
+      
+      specify { (subject <= "5").should eq     true }
+      specify { (subject <= "5.1").should eq   true }
+      specify { (subject <= "5.1.2").should eq true }
     end
     
   end

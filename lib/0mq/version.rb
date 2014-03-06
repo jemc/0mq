@@ -42,7 +42,7 @@ module ZMQ
       end
       
       # Compare this version to another version.
-      # Examples: "4.0.3", "3.2", "3", 3
+      # Examples: "3.2.0", "3.2", "3", 3
       def <=>(value)
         expression = /(?<major>\d+)(\.(?<minor>\d+))?(\.(?<patch>\d+))?/
         
@@ -51,13 +51,13 @@ module ZMQ
         other_version = value.to_s
         
         this_version =~ expression
-        this_set = $~.captures.map &:to_i
+        this_set = $~.captures.map { |item| item.to_i if item }.select { |item| item }
         
         other_version =~ expression
-        other_set = $~.captures.map &:to_i
+        other_set = $~.captures.map { |item| item.to_i if item }.select { |item| item }
         
         # Compare each section (major/minor/patch) of the version number.
-        this_set.count.times do |i|
+        other_set.count.times do |i|
           return  1 if this_set[i] > other_set[i]
           return -1 if this_set[i] < other_set[i]
         end
