@@ -65,7 +65,7 @@ module ZMQ
       ZMQ.error_check true if rc==-1
     end
     
-    # Disconnect to an endpoint
+    # Disconnect from an endpoint
     def disconnect(endpoint)
       rc = LibZMQ.zmq_disconnect @pointer, endpoint
       ZMQ.error_check true if rc==-1
