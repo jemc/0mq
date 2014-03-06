@@ -28,3 +28,18 @@ File them as issues or pull requests on [the github repository](https://github.c
 - Joe McIlvain
 
 - Alex McLain
+
+## Installation / Prerequisites
+
+- Requires the libzmq library: http://zeromq.org/intro:get-the-software
+
+- PGM (multicast) requires compiling libzmq with ./configure --with-pgm
+
+- Curve cryptography requires compiling libzmq with libsodium:
+	https://github.com/jedisct1/libsodium
+	
+## ZeroMQ Documentation
+
+- Manual: http://zeromq.org/intro:read-the-manual
+
+- API: http://api.zeromq.org/
