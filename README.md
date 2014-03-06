@@ -74,7 +74,7 @@ Sockets can be created by specifying the [ZMQ socket type](http://api.zeromq.org
 
 ### Poll A Socket For Data
 
-	address = 'tcp://127.0.0.1:10000'
+	address = 'inproc://poll_example'
 
 	pull = ZMQ::Socket.new ZMQ::PULL
 	pull.bind address
@@ -84,9 +84,8 @@ Sockets can be created by specifying the [ZMQ socket type](http://api.zeromq.org
 	  push = ZMQ::Socket.new ZMQ::PUSH
 	  push.connect address
 	  sleep 3
-	  
+
 	  push.send_string 'test'
-	  sleep 0.1
 	end
 
 	# Check if pull has any data (it doesn't yet).
@@ -98,3 +97,26 @@ Sockets can be created by specifying the [ZMQ socket type](http://api.zeromq.org
 	ZMQ::Poll.poll pull do |socket, event|
 	  puts socket.recv_string
 	end
+
+### Proxy Sockets
+
+A proxy can be used to funnel multiple endpoints into a single connection.
+See: [Pub-Sub Network with a Proxy](http://zguide.zeromq.org/page:all#The-Dynamic-Discovery-Problem)
+
+	# ----------------     ----------------     ----------------     ----------------
+	# | Endpoint REQ | --> | Proxy ROUTER | --> | Proxy DEALER | --> | Endpoint REP |
+	# ----------------     ----------------     ----------------     ----------------
+
+	# Create sockets.
+	endpoint_req = ZMQ::Socket.new(ZMQ::REQ).tap    { |s| s.bind    'inproc://proxy_in'  }
+	proxy_router = ZMQ::Socket.new(ZMQ::ROUTER).tap { |s| s.connect 'inproc://proxy_in'  }
+	proxy_dealer = ZMQ::Socket.new(ZMQ::DEALER).tap { |s| s.bind    'inproc://proxy_out' }
+	endpoint_rep = ZMQ::Socket.new(ZMQ::REP).tap    { |s| s.connect 'inproc://proxy_out' }
+
+	# Create the proxy.
+	Thread.new { ZMQ::Proxy.proxy proxy_router, proxy_dealer }
+
+	# Send a message.
+	endpoint_req.send_string 'test'
+
+	puts endpoint_rep.recv_string

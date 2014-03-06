@@ -8,6 +8,11 @@ module ZMQ
   # between frontend and backend.
   class Proxy
     
+    # Create a running proxy object.
+    def self.proxy(frontend, backend, capture = nil)
+      new(frontend, backend, capture).tap { |p| p.run }
+    end
+    
     # Accepts a frontend, backend, and optional capture socket.
     # See http://api.zeromq.org/4-0:zmq-proxy
     def initialize(frontend, backend, capture = nil)

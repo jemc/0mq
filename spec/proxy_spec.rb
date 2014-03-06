@@ -21,4 +21,11 @@ describe ZMQ::Proxy do
     thr.kill
   end
   
+  it "can be instantiated and started with #proxy" do
+    thr = Thread.new { ZMQ::Proxy.proxy frontend, backend }
+    client.send_array            ['some', 'workload', 'data']
+    service.recv_array.should eq ['some', 'workload', 'data']
+    thr.kill
+  end
+  
 end
