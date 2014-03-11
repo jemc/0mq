@@ -26,6 +26,11 @@ module ZMQ
                                    self.class.finalizer(@socket, Process.pid)
     end
     
+    # Show a useful inspect output
+    def inspect
+      "#<#{self.class}:#{type_sym}:#{object_id.to_s(16)}>"
+    end
+    
     # Close the socket
     def close
       if @pointer
