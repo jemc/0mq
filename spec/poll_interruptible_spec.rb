@@ -18,6 +18,10 @@ describe ZMQ::PollInterruptible do
   it "can be interrupted" do
     subject
     
+    Thread.new {
+      subject.run { |sock,evts| sock.should eq nil; evts.should eq nil }
+    }.tap { subject.interrupt.should eq true }.join
+    
     Thread.new { subject.run }.tap { subject.interrupt.should eq true }.join
     Thread.new { subject.run }.tap { subject.interrupt.should eq true }.join
   end
@@ -26,7 +30,9 @@ describe ZMQ::PollInterruptible do
     subject
     subject.dead?.should eq false
     
-    Thread.new { subject.run }.tap { subject.kill.should eq true }.join
+    Thread.new {
+      subject.run { |sock,evts| sock.should eq nil; evts.should eq nil }
+    }.tap { subject.kill.should eq true }.join
     
     # Poll is now dead
     subject.dead?.should eq true
