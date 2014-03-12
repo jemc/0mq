@@ -6,6 +6,7 @@ describe ZMQ::Socket do
   
   subject { ZMQ::Socket.new type }
   let(:type) { ZMQ::SUB }
+  let(:socket_path) { 'ipc:///tmp/test' }
   
   let!(:pull_sock) { ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/pp'} }
   let!(:push_sock) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/pp'} }
@@ -27,7 +28,7 @@ describe ZMQ::Socket do
   
   
   it "can bind to an endpoint" do
-    subject.bind 'ipc:///tmp/test'
+    subject.bind socket_path
   end
   
   it "will raise on a bad call to bind" do
@@ -35,16 +36,16 @@ describe ZMQ::Socket do
   end
   
   it "can unbind from an endpoint" do
-    subject.bind   'ipc:///tmp/test'
-    subject.unbind 'ipc:///tmp/test'
+    subject.bind   socket_path
+    subject.unbind socket_path
   end
   
   it "will raise on a bad call to unbind" do
-    expect { subject.unbind 'ipc:///tmp/test' }.to raise_error SystemCallError
+    expect { subject.unbind socket_path }.to raise_error SystemCallError
   end
   
   it "can connect to an endpoint" do
-    subject.connect 'ipc:///tmp/test'
+    subject.connect socket_path
   end
   
   it "will raise on a bad call to connect" do
@@ -52,12 +53,12 @@ describe ZMQ::Socket do
   end
   
   it "can disconnect from an endpoint" do
-    subject.connect    'ipc:///tmp/test'
-    subject.disconnect 'ipc:///tmp/test'
+    subject.connect    socket_path
+    subject.disconnect socket_path
   end
   
   it "will raise on a bad call to disconnect" do
-    expect { subject.disconnect 'ipc:///tmp/test' }.to raise_error SystemCallError
+    expect { subject.disconnect socket_path }.to raise_error SystemCallError
   end
   
   it "can get and set int socket options" do
@@ -104,9 +105,9 @@ describe ZMQ::Socket do
   end
   
   it "can get string socket options" do
-    subject.bind 'ipc:///tmp/test'
-    subject.get_opt(ZMQ::LAST_ENDPOINT).should eq 'ipc:///tmp/test'
-    subject.last_endpoint              .should eq 'ipc:///tmp/test'
+    subject.bind socket_path
+    subject.get_opt(ZMQ::LAST_ENDPOINT).should eq socket_path
+    subject.last_endpoint              .should eq socket_path
   end
   
   it "will raise on a bad call to set_opt" do
@@ -128,8 +129,8 @@ describe ZMQ::Socket do
   
   specify "binding or connecting a closed socket raises an exception" do
     subject.close
-    expect { subject.bind 'ipc:///tmp/test' }.to raise_error Errno::ENOTSOCK
-    expect { subject.connect 'ipc:///tmp/test' }.to raise_error Errno::ENOTSOCK
+    expect { subject.bind socket_path }.to raise_error Errno::ENOTSOCK
+    expect { subject.connect socket_path }.to raise_error Errno::ENOTSOCK
   end
   
   it "sets up a closing finalizer for the socket pointer" do
