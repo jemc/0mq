@@ -50,4 +50,18 @@ describe ZMQ::PollInterruptible do
     subject.close.should eq nil # return nil if already dead
   end
   
+  it "can be instantiated and used with no sockets given" do
+    subject = poll_class.new()
+    
+    Thread.new { subject.run }.tap { subject.interrupt.should eq true }.join
+    Thread.new { subject.run }.tap { subject.interrupt.should eq true }.join
+    Thread.new { subject.run }.tap { subject.kill.should eq true }.join
+    
+    # Poll is now dead
+    subject.dead?.should eq true
+    expect { subject.run }.to raise_error RuntimeError
+    subject.kill.should eq nil # return nil if already dead
+    subject.close.should eq nil # return nil if already dead
+  end
+  
 end
