@@ -4,6 +4,8 @@ module ZMQ
   class PollInterruptible < Poll
     
     # Creates the additional interruption objects and calls super
+    # Note that either #kill or #close MUST be called when done with the object.
+    # There is no automatic finalizer for this object.
     def initialize(*sockets)
       @int_context = ZMQ::Context.new
       @int_sock_rep = ZMQ::Socket.new ZMQ::REP, context:@int_context
@@ -39,15 +41,20 @@ module ZMQ
     # This should only be accessed from a thread other than the poll thread,
     #   and only if the poll thread is running
     def interrupt
-      @int_sock_req.send_array [""]
+      @int_sock_req.send_string ""
       @int_sock_req.recv_array
+      
+      true
     end
     
     # Interrupt the running poll loop and permanently kill the Poll object
     # This should be run once, when the Poll object is no longer needed.
     # This should only be accessed from a thread other than the poll thread,
     #   and only if the poll thread is running
+    # Use #cleanup instead when there is no poll loop thread running.
     def kill
+      return nil if @dead
+      
       @int_sock_req.send_array ["KILL"]
       @int_sock_req.recv_array
       @int_sock_req.close
@@ -55,6 +62,27 @@ module ZMQ
       
       @dead = true
     end
+    
+    # Permanently kill the Poll object
+    # This should be run once, when the Poll object is no longer needed.
+    # This should only be accessed when there is no poll thread running.
+    # Use #kill instead when there is a poll loop thread running.
+    def close
+      return nil if @dead
+      
+      @int_sock_rep.close
+      @int_sock_req.close
+      @int_context.terminate
+      
+      @dead = true
+    end
+    
+    # Return true if the object has been killed or closed and cannot be run
+    def dead?
+      @dead
+    end
+    
+    # TODO: add finalizer for cleanup for neglectful user developers
     
   end
 end
