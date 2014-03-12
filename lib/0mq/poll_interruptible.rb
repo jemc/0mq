@@ -1,6 +1,7 @@
 
 module ZMQ
   
+  # An interruptible version of Poll.
   class PollInterruptible < Poll
     
     # Creates the additional interruption objects and calls super
