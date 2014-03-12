@@ -15,6 +15,7 @@ module ZMQ
     attr_reader :type
     
     def initialize(type, opts={})
+      @closed = false
       @context = opts.fetch :context, ZMQ::DefaultContext
       @type = type
       @pointer = LibZMQ.zmq_socket @context.pointer, @type
@@ -33,6 +34,8 @@ module ZMQ
     
     # Close the socket
     def close
+      @closed = true
+      
       if @pointer
         ObjectSpace.undefine_finalizer self
         @temp_buffers.clear if @temp_buffers
@@ -42,6 +45,11 @@ module ZMQ
         
         @pointer = nil
       end
+    end
+    
+    # Returns true if the socket is closed.
+    def closed?
+      @closed
     end
     
     # Create a safe finalizer for the socket pointer to close on GC of the object

@@ -120,6 +120,18 @@ describe ZMQ::Socket do
     expect { subject.get_opt ZMQ::AFFINITY }.to raise_error SystemCallError
   end
   
+  specify(:closed?) {
+    subject.closed?.should eq false
+    subject.close
+    subject.closed?.should eq true
+  }
+  
+  specify "binding or connecting a closed socket raises an exception" do
+    subject.close
+    expect { subject.bind 'ipc:///tmp/test' }.to raise_error Errno::ENOTSOCK
+    expect { subject.connect 'ipc:///tmp/test' }.to raise_error Errno::ENOTSOCK
+  end
+  
   it "sets up a closing finalizer for the socket pointer" do
     finalizer = nil
     ObjectSpace.should_receive :define_finalizer do |obj, proc|
