@@ -4,7 +4,7 @@ _Works like ZeroMQ. Feels like Ruby._
 [![Build Status](https://travis-ci.org/jemc/0mq.png)](https://travis-ci.org/jemc/0mq)
 [![Gem Version](https://badge.fury.io/rb/0mq.png)](http://badge.fury.io/rb/0mq)
 
-A Ruby-like wrapper for ffi-rzmq-core (ZeroMQ)
+The 0mq gem is a Ruby wrapper for the ZeroMQ (libzmq) API. Built on ffi-rzmq-core, the bridge from Ruby to ZeroMQ’s C API, the 0mq gem conceals the interaction with FFI and exposes an interface that uses blocks, raises exceptions, and feels like the Ruby we love to use.
 
 ## Supported
 
