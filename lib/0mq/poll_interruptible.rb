@@ -8,11 +8,14 @@ module ZMQ
     # Note that either #kill or #close MUST be called when done with the object.
     # There is no automatic finalizer for this object.
     def initialize(*sockets)
-      @int_context = ZMQ::Context.new
-      @int_sock_rep = ZMQ::Socket.new ZMQ::REP, context:@int_context
-      @int_sock_req = ZMQ::Socket.new ZMQ::REQ, context:@int_context
-      @int_sock_rep.bind    "inproc://int"
-      @int_sock_req.connect "inproc://int"
+      @int_sock_rep = ZMQ::Socket.new ZMQ::REP
+      @int_sock_req = ZMQ::Socket.new ZMQ::REQ
+      
+      # Choose an endpoint name that we can expect to be unique
+      # so that they can be shared within the DefaultContext
+      int_endpoint = "inproc://__PollInterruptible_int_"+hash.to_s(26)
+      @int_sock_rep.bind    int_endpoint
+      @int_sock_req.connect int_endpoint
       
       @dead = false
       
@@ -59,7 +62,6 @@ module ZMQ
       @int_sock_req.send_array ["KILL"]
       @int_sock_req.recv_array
       @int_sock_req.close
-      @int_context.terminate
       
       @dead = true
     end
@@ -73,7 +75,6 @@ module ZMQ
       
       @int_sock_rep.close
       @int_sock_req.close
-      @int_context.terminate
       
       @dead = true
     end
