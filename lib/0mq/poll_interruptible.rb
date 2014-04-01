@@ -22,7 +22,8 @@ module ZMQ
       super @int_sock_rep, *sockets
     end
     
-    # Same as Poll#run, but will yield [nil, nil] to the block if interrupted
+    # Same as Poll#run, but will yield [nil, nil] to the block if interrupted.
+    # Return value may be an empty hash if the poller was killed.
     def run(&block)
       raise "#{self} cannot run; it was permanently killed." if @dead
       

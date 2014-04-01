@@ -82,6 +82,8 @@ module ZMQ
     # Start polling.
     # 
     # Returns a hash of ZMQ::Socket => revents (triggered event flags).
+    # In the case of PollInterruptible, the return value may be an empty
+    # hash if the poller was killed.
     # Each item of the hash is passed to the block, if provided.
     def run(&block)
       return {} if @poll_items.empty?
