@@ -173,6 +173,18 @@ describe ZMQ::Socket do
     pull_sock.recv_array.should eq ['testA1', 'testA2']
   end
   
+  it "can pass flags to send_array and recv_array" do
+    i = 0
+    push_sock.should_receive(:send_string).twice { |*args|
+      args.should eq (i==0 ? ['testA1', ZMQ::SNDMORE|ZMQ::DONTWAIT] : 
+                             ['testA2', ZMQ::DONTWAIT]); i+= 1
+    }
+    push_sock.send_array ['testA1', 'testA2'], ZMQ::DONTWAIT
+    
+    pull_sock.should_receive(:recv_string).with(ZMQ::DONTWAIT)
+    pull_sock.recv_array ZMQ::DONTWAIT
+  end
+  
   it "will do an array conversion if the multipart message is not an array" do
     data = Object.new.tap {|obj|
       obj.instance_eval { def to_a; ["part1","part2","part3"]; end }

@@ -121,17 +121,17 @@ module ZMQ
     end
     
     # Send a multipart message as an array of strings
-    def send_array(array)
+    def send_array(array, flags = 0)
       array = array.to_a
-      array[0...-1].each { |str| send_string str, ZMQ::SNDMORE }
-      send_string array.last
+      array[0...-1].each { |str| send_string str, ZMQ::SNDMORE|flags }
+      send_string array.last, flags
     end
     
     # Receive a multipart message as an array of strings
-    def recv_array
+    def recv_array(flags = 0)
       [].tap do |ary|
         loop do
-          ary << recv_string
+          ary << recv_string(flags)
           break unless get_opt(ZMQ::RCVMORE)
         end
       end
