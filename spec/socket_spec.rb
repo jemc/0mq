@@ -111,8 +111,8 @@ describe ZMQ::Socket do
   end
   
   it "will raise on a bad call to set_opt" do
-    expect { subject.set_opt ZMQ::IDENTITY, "\x00 can't start with zero" }.to \
-      raise_error SystemCallError
+    expect { subject.set_opt ZMQ::IDENTITY, "" }.to \
+      raise_error SystemCallError # socket identity cannot be empty
   end
   
   it "can close itself" do
