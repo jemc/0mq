@@ -21,12 +21,11 @@ describe ZMQ::PollInterruptible do
     it "can be interrupted" do
       subject
       interruptions = []
-      run_proc = ->(*args){ interruptions << args }
       
       3.times do
-        Thread.new { subject.run &run_proc }
-              .tap { subject.interrupt.should eq true }
-              .join
+        thr = Thread.new { subject.run { |*args| interruptions << args } }
+        subject.interrupt.should eq true
+        thr.join
       end
       
       interruptions.count.should eq 3
