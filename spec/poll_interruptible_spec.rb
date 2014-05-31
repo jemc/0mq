@@ -17,13 +17,17 @@ describe ZMQ::PollInterruptible do
   
   it "can be interrupted" do
     subject
+    interruptions = []
+    run_proc = ->(*args){ interruptions << args }
     
-    Thread.new {
-      subject.run { |sock,evts| sock.should eq nil; evts.should eq nil }
-    }.tap { subject.interrupt.should eq true }.join
+    3.times do
+      Thread.new { subject.run &run_proc }
+            .tap { subject.interrupt.should eq true }
+            .join
+    end
     
-    Thread.new { subject.run }.tap { subject.interrupt.should eq true }.join
-    Thread.new { subject.run }.tap { subject.interrupt.should eq true }.join
+    interruptions.count.should eq 3
+    interruptions.each { |sock,evts| sock.should eq nil; evts.should eq nil }
   end
   
   it "can be killed" do
