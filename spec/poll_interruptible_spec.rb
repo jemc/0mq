@@ -32,6 +32,25 @@ describe ZMQ::PollInterruptible do
       interruptions.each { |sock,evts| sock.should eq nil; evts.should eq nil }
     end
     
+    it "can be interrupted with a block" do
+      subject
+      interruptions = []
+      bools = {}
+      
+      threads = 3.times.map do |i|
+        bools[i] = false
+        thr = Thread.new {
+          subject.run { |*args| interruptions << args; bools[i].should eq true }
+        }
+        subject.interrupt { bools[i] = true; i }.should eq i
+        thr
+      end
+      threads.each &:join
+      
+      interruptions.count.should eq 3
+      interruptions.each { |sock,evts| sock.should eq nil; evts.should eq nil }
+    end
+    
     it "can be killed" do
       subject
       subject.dead?.should eq false

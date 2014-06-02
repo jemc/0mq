@@ -17,6 +17,10 @@ module ZMQ
       @int_sock_rep.bind    int_endpoint
       @int_sock_req.connect int_endpoint
       
+      # Interruption blocks are stored here by key until #run receives them.
+      # After each is run, the return value is stored here in its place.
+      @interruptions = {}
+      
       @dead = false
       
       super @int_sock_rep, *sockets
@@ -29,12 +33,17 @@ module ZMQ
       
       super do |socket, revents|
         if socket == @int_sock_rep
-          result = socket.recv_array
+          key, * = socket.recv_array
+          kill = key == "KILL"
           
+          # Call the user block of #interrupt and store the return value
+          @interruptions[key] = @interruptions[key].call unless kill
+          
+          # Call the user block of #run
           block.call nil, nil if block
           
           socket.send_array ["OKAY"]
-          @int_sock_rep.close if result == ["KILL"]
+          @int_sock_rep.close if kill
         else
           block.call socket, revents if block
         end
@@ -45,11 +54,18 @@ module ZMQ
     # This should be run anytime to let the poller re-evaluate state, etc..
     # This should only be accessed from a thread other than the poll thread,
     #   and only if the poll thread is running
-    def interrupt
-      @int_sock_req.send_string ""
-      @int_sock_req.recv_array
+    # If a block is given, it will be executed in the poll thread just
+    #   prior to the execution of the user block passed to {#run}.
+    def interrupt(&block)
+      block ||= Proc.new { true }
+      key = block.object_id.to_s 36
       
-      true
+      @interruptions[key] = block # Store the block to be called
+      
+      @int_sock_req.send_string key # Signal an interruption to #run
+      @int_sock_req.recv_array      # Wait until it has been handled by #run
+      
+      @interruptions.delete key # Return the stored result of the block
     end
     
     # Interrupt the running poll loop and permanently kill the Poll object
