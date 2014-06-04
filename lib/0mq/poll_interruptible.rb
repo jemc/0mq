@@ -43,7 +43,11 @@ module ZMQ
           block.call nil, nil if block
           
           socket.send_array ["OKAY"]
-          @int_sock_rep.close if kill
+          
+          if kill
+            @int_sock_rep.close
+            @dead = true
+          end
         else
           block.call socket, revents if block
         end
@@ -78,9 +82,10 @@ module ZMQ
       
       @int_sock_req.send_array ["KILL"]
       @int_sock_req.recv_array
+      
       @int_sock_req.close
       
-      @dead = true
+      true
     end
     
     # Permanently kill the Poll object
