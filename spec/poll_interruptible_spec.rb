@@ -56,7 +56,10 @@ describe ZMQ::PollInterruptible do
       subject.dead?.should eq false
       
       Thread.new {
-        subject.run { |sock,evts| sock.should eq nil; evts.should eq nil }
+        loop {
+          break if subject.dead?
+          subject.run { |sock,evts| sock.should eq nil; evts.should eq nil }
+        }
       }.tap { subject.kill.should eq true }.join
       
       # Poll is now dead
