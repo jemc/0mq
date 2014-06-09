@@ -1,3 +1,4 @@
+      require 'pry'
 
 module ZMQ
   
@@ -10,7 +11,6 @@ module ZMQ
     
     def initialize
       @pointer = LibZMQ.zmq_ctx_new
-      @socket_pointers = []
       
       ObjectSpace.define_finalizer self,
                                    self.class.finalizer(@pointer, Process.pid)
@@ -31,10 +31,9 @@ module ZMQ
     
     # Terminate the given FFI Context pointer
     def self.terminate_pointer(pointer)
-      rc = LibZMQ.version4?       ? 
-        LibZMQ.zmq_ctx_term(@pointer) : 
+      LibZMQ.respond_to?(:zmq_ctx_term) ? 
+        LibZMQ.zmq_ctx_term(@pointer)   : 
         LibZMQ.zmq_term(@pointer)
-      ZMQ.error_check true if rc == -1
     end
     private_class_method :terminate_pointer
     
