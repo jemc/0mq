@@ -1,4 +1,12 @@
-before_install: sudo apt-get install libzmq3-dev
+before_install:
+  "git clone https://github.com/$LIBZMQ_REPO libzmq \
+&& cd libzmq                                        \
+&& ./autogen.sh                                     \
+&& ./configure --with-pgm                           \
+&& make                                             \
+&& sudo make install                                \
+&& cd .."
+
 script: bundle exec rspec
 language: ruby
 rvm:
@@ -6,6 +14,9 @@ rvm:
   - 2.0
   - 2.1
   - rbx-2
+env:
+  - LIBZMQ_REPO=zeromq/zeromq3-x
+  - LIBZMQ_REPO=zeromq/zeromq4-x
 notifications:
   email: false
   irc:
