@@ -2,8 +2,9 @@ before_install: sudo apt-get install libzmq3-dev
 script: bundle exec rspec
 language: ruby
 rvm:
-  - 1.9.3
-  - 2.1.0
+  - 1.9
+  - 2.0
+  - 2.1
   - rbx-2
 notifications:
   email: false
