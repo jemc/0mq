@@ -24,7 +24,7 @@ module ZMQ
       @msgptr = FFI::MemoryPointer.new LibZMQ::Message.size, 1, false
       
       ObjectSpace.define_finalizer self,
-                                   self.class.finalizer(@socket, Process.pid)
+                                   self.class.finalizer(@pointer, Process.pid)
     end
     
     # Show a useful inspect output
