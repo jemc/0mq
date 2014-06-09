@@ -10,19 +10,33 @@ module ZMQ
     
     def initialize
       @pointer = LibZMQ.zmq_ctx_new
+      @socket_pointers = []
+      
+      ObjectSpace.define_finalizer self,
+                                   self.class.finalizer(@pointer, Process.pid)
     end
     
     # Destroy the ØMQ context.
     def terminate
       if @pointer
-        rc = LibZMQ.version4?       ? 
-          LibZMQ.zmq_ctx_term(@pointer) : 
-          LibZMQ.zmq_term(@pointer)
-        ZMQ.error_check true if rc == -1
-        
+        self.class.send :terminate_pointer, @pointer
         @pointer = nil
       end
     end
+    
+    # Create a safe finalizer for the context pointer to terminate on GC
+    def self.finalizer(pointer, pid)
+      Proc.new { terminate_pointer pointer if Process.pid == pid }
+    end
+    
+    # Terminate the given FFI Context pointer
+    def self.terminate_pointer(pointer)
+      rc = LibZMQ.version4?       ? 
+        LibZMQ.zmq_ctx_term(@pointer) : 
+        LibZMQ.zmq_term(@pointer)
+      ZMQ.error_check true if rc == -1
+    end
+    private_class_method :terminate_pointer
     
     # Create a Socket within this context.
     def socket(type, opts={})

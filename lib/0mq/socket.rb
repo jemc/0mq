@@ -52,7 +52,7 @@ module ZMQ
       @closed
     end
     
-    # Create a safe finalizer for the socket pointer to close on GC of the object
+    # Create a safe finalizer for the socket pointer to close on GC
     def self.finalizer(pointer, pid)
       Proc.new { LibZMQ.zmq_close pointer if Process.pid == pid }
     end
