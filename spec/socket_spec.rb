@@ -134,15 +134,16 @@ describe ZMQ::Socket do
   end
   
   it "sets up a closing finalizer for the socket pointer" do
+    socket = nil
     finalizer = nil
     ObjectSpace.should_receive :define_finalizer do |obj, proc|
-      obj.should be_a ZMQ::Socket
+      socket = obj
       finalizer = proc
     end
     
-    ZMQ::Socket.new(ZMQ::PULL)
+    ZMQ::Socket.new(ZMQ::PULL).should eq socket
     
-    LibZMQ.should_receive(:zmq_close).at_least(:once)
+    LibZMQ.should_receive(:zmq_close).with(socket.pointer).exactly(:once)
     finalizer.call
   end
   
