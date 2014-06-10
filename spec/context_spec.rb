@@ -24,6 +24,21 @@ describe ZMQ::Context do
     socket.context.should be subject
   end
   
+  it "sets up a terminating finalizer for the context pointer" do
+    context = nil
+    finalizer = nil
+    ObjectSpace.should_receive :define_finalizer do |obj, proc|
+      context = obj
+      finalizer = proc
+    end
+    
+    ZMQ::Context.new.should eq context
+    
+    term_meth = LibZMQ.respond_to?(:zmq_ctx_term) ? :zmq_ctx_term : :zmq_term
+    LibZMQ.should_receive(term_meth).with(context.pointer).exactly(:once)
+    finalizer.call
+  end
+  
   describe ZMQ::DefaultContext do
     it { should be_a ZMQ::Context }
   end

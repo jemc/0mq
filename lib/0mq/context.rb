@@ -32,8 +32,8 @@ module ZMQ
     # Terminate the given FFI Context pointer
     def self.terminate_pointer(pointer)
       LibZMQ.respond_to?(:zmq_ctx_term) ? 
-        LibZMQ.zmq_ctx_term(@pointer)   : 
-        LibZMQ.zmq_term(@pointer)
+        LibZMQ.zmq_ctx_term(pointer)   : 
+        LibZMQ.zmq_term(pointer)
     end
     private_class_method :terminate_pointer
     
