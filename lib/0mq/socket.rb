@@ -23,8 +23,10 @@ module ZMQ
       
       @msgptr = FFI::MemoryPointer.new LibZMQ::Message.size, 1, false
       
+      @context.send :register_socket_pointer, @pointer
+      
       ObjectSpace.define_finalizer self,
-                                   self.class.finalizer(@pointer, Process.pid)
+        self.class.finalizer(@pointer, @context, Process.pid)
     end
     
     # Show a useful inspect output
@@ -37,13 +39,16 @@ module ZMQ
       @closed = true
       
       if @pointer
-        ObjectSpace.undefine_finalizer self
         @temp_buffers.clear if @temp_buffers
+        
+        ObjectSpace.undefine_finalizer self
+        @context.send :unregister_socket_pointer, @pointer
         
         rc = LibZMQ.zmq_close @pointer
         ZMQ.error_check true if rc==-1
         
         @pointer = nil
+        @context = nil
       end
     end
     
@@ -53,8 +58,13 @@ module ZMQ
     end
     
     # Create a safe finalizer for the socket pointer to close on GC
-    def self.finalizer(pointer, pid)
-      Proc.new { LibZMQ.zmq_close pointer if Process.pid == pid }
+    def self.finalizer(pointer, context, pid)
+      Proc.new do
+        if Process.pid == pid
+          context.send :unregister_socket_pointer, pointer
+          LibZMQ.zmq_close pointer
+        end
+      end
     end
     
     # Get the socket type name as a symbol

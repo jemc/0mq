@@ -106,7 +106,5 @@ module ZMQ
       @dead
     end
     
-    # TODO: add finalizer for cleanup for neglectful user developers
-    
   end
 end

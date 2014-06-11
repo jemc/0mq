@@ -21,7 +21,7 @@ describe ZMQ::Context do
     
     socket.should be_a ZMQ::Socket
     socket.type.should eq ZMQ::ROUTER
-    socket.context.should be subject
+    socket.context.should eq subject
   end
   
   it "sets up a terminating finalizer for the context pointer" do
@@ -35,7 +35,8 @@ describe ZMQ::Context do
     ZMQ::Context.new.should eq context
     
     term_meth = LibZMQ.respond_to?(:zmq_ctx_term) ? :zmq_ctx_term : :zmq_term
-    LibZMQ.should_receive(term_meth).with(context.pointer).exactly(:once)
+    LibZMQ.should_receive(term_meth).with(context.pointer)
+          .exactly(:once).and_call_original
     finalizer.call
   end
   
