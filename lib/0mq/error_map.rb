@@ -3,12 +3,12 @@ module ZMQ
   
   # A hash of error number => exception class.
   # Example: 1 => Errno::EPERM
-  ErrorMap = Hash.new
+  @error_map = Hash.new
   
   Errno.constants
     .map    { |x| Errno.const_get x }
     .select { |x| x.is_a?(Class) && x < SystemCallError }
-    .each   { |x| ErrorMap[x.const_get(:Errno)] = x }
+    .each   { |x| @error_map[x.const_get(:Errno)] = x }
   
   
   # Checks the libzmq global error number and raises it as an exception.
@@ -19,8 +19,8 @@ module ZMQ
     return true if errno == 25 # TODO: What is this for? Remove?
     
     backtrace = adjust_backtrace ? caller[0...-2] : caller
-    if ErrorMap.has_key? errno
-      raise ErrorMap[errno], '', backtrace
+    if @error_map.has_key? errno
+      raise @error_map[errno], '', backtrace
     else
       raise SystemCallError, errno.to_s, backtrace
     end
