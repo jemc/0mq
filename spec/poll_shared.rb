@@ -8,16 +8,11 @@ shared_examples "a poll class" do
   let!(:push2){ ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p2' } }
   let!(:pull2){ ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p2' } }
   
-  let!(:pushX){ ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://XX' } }
-  let!(:pullX){ ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://XX' } }
-  
   after {
-    pullX.close
-    pushX.close
-    pull2.close
-    push2.close
-    pull.close
     push.close
+    pull.close
+    push2.close
+    pull2.close
   }
   
   around { |test| Timeout.timeout(1) { test.run } }
@@ -49,7 +44,7 @@ shared_examples "a poll class" do
     end
     
     it "can accept multiple sockets with event flags" do
-      poll_class.new(push => ZMQ::POLLOUT, pushX => ZMQ::POLLOUT)
+      poll_class.new(push => ZMQ::POLLOUT, push2 => ZMQ::POLLOUT)
         .tap { |p| p.run.count.should eq 2 }
     end
     
