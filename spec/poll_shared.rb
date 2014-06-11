@@ -3,18 +3,21 @@ shared_examples "a poll class" do
   
   subject { poll_class.new pull }
   
-  let!(:push) { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://pt' } }
-  let!(:pull) { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://pt' } }
-  let(:pull2) { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://pt' } }
+  let!(:push) { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p1' } }
+  let!(:pull) { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p1' } }
+  let!(:push2){ ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p2' } }
+  let!(:pull2){ ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p2' } }
   
-  let(:pushX) { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://XX' } }
-  let(:pullX) { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://XX' } }
+  let!(:pushX){ ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://XX' } }
+  let!(:pullX){ ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://XX' } }
   
   after {
-    push.close
-    pull.close
+    pullX.close
     pushX.close
     pull2.close
+    push2.close
+    pull.close
+    push.close
   }
   
   around { |test| Timeout.timeout(1) { test.run } }
@@ -30,10 +33,8 @@ shared_examples "a poll class" do
     end
     
     it "can accept multiple sockets with no event flags" do
-      pull2
-      
       push.send_string 'test'
-      push.send_string 'test'
+      push2.send_string 'test'
       
       poll_class.new(pull, pull2).tap { |p|
         p.run.count.should eq 2
@@ -48,17 +49,13 @@ shared_examples "a poll class" do
     end
     
     it "can accept multiple sockets with event flags" do
-      pushX; pullX
-      
       poll_class.new(push => ZMQ::POLLOUT, pushX => ZMQ::POLLOUT)
         .tap { |p| p.run.count.should eq 2 }
     end
     
     it "can accept multiple sockets with and without event flags" do
-      pull2
-      
       push.send_string 'test'
-      push.send_string 'test'
+      push2.send_string 'test'
       
       poll_class.new(pull, pull2, push => ZMQ::POLLOUT)
         .tap { |p| p.run.count.should eq 3 }
@@ -101,10 +98,8 @@ shared_examples "a poll class" do
   
   context "return values:" do
     it "returns a hash of sockets ready for IO" do
-      pull2
-      
       push.send_string 'test'
-      push.send_string 'test'
+      push2.send_string 'test'
       
       results = poll_class.new(pull, pull2, push => ZMQ::POLLOUT).run
       
@@ -115,10 +110,8 @@ shared_examples "a poll class" do
     end
     
     it "passes sockets ready for IO to a block" do
-      pull2
-      
       push.send_string 'test'
-      push.send_string 'test'
+      push2.send_string 'test'
       
       results = {}
       poll_class.new(pull, pull2, push => ZMQ::POLLOUT)
