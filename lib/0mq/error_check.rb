@@ -12,12 +12,14 @@ module ZMQ
   }.each do |name, message|
     klass = Class.new SystemCallError do
       define_singleton_method :exception do |*args|
-        super(*args)
-        .tap { |exc| exc.define_singleton_method(:message) { message } }
-        .tap { |exc| exc.define_singleton_method(:to_s)    { message } }
-        .tap { |exc| exc.define_singleton_method(:inspect) { 
-          "#<Errno::#{name}: #{message}>"
-        } }
+        superclass.superclass.singleton_class
+        .instance_method(:new).bind(self).call(*args).tap { |exc|
+          exc.define_singleton_method(:message) { message }
+          exc.define_singleton_method(:to_s)    { message }
+          exc.define_singleton_method(:inspect) { 
+            "#<Errno::#{name}: #{message}>"
+          }
+        }
       end
     end
     
