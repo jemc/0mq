@@ -24,6 +24,15 @@ describe ZMQ::Socket do
   its(:type) { should eq ZMQ::SUB }
   its(:type_sym) { should eq :SUB }
   
+  after {
+    pull_sock.tap { |s| s.close unless s.closed? }
+    push_sock.tap { |s| s.close unless s.closed? }
+    req_sock .tap { |s| s.close unless s.closed? }
+    rtr_sockp.tap { |s| s.close unless s.closed? }
+    dlr_sockp.tap { |s| s.close unless s.closed? }
+    rtr_sock .tap { |s| s.close unless s.closed? }
+  }
+  
   around { |test| Timeout.timeout(5) { test.run } }
   
   
@@ -146,6 +155,11 @@ describe ZMQ::Socket do
     LibZMQ.should_receive(:zmq_close).with(socket.pointer)
           .exactly(:once).and_call_original
     finalizer.call
+    
+    # Verify message expectations and clear out to original implementations
+    # so that the method calls in the after block go through and prevent lockup
+    RSpec::Mocks.verify
+    RSpec::Mocks.teardown
   end
   
   it "can send and receive strings" do
