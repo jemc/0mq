@@ -41,7 +41,6 @@ module ZMQ
   # Example: ZMQ.error_check if rc == -1
   def self.error_check(adjust_backtrace=false)
     errno = LibZMQ.zmq_errno
-    return true if errno == 25 # TODO: What is this for? Remove?
     
     backtrace = adjust_backtrace ? caller[0...-2] : caller
     if @error_map.has_key? errno
