@@ -4,7 +4,6 @@ require 'spec_helper'
 
 describe ZMQ::Proxy do
   
-  
   let!(:frontend){ ZMQ::Socket.new(ZMQ::PULL).tap{|s| s.bind    'ipc:///tmp/f'} }
   let!(:backend) { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.bind    'ipc:///tmp/b'} }
   let!(:client)  { ZMQ::Socket.new(ZMQ::PUSH).tap{|s| s.connect 'ipc:///tmp/f'} }
@@ -12,7 +11,7 @@ describe ZMQ::Proxy do
   
   subject { ZMQ::Proxy.new frontend, backend }
   
-  around { |test| Timeout.timeout(1) {test.run} } # Timeout after 1 second
+  around { |test| Timeout.timeout(5) { test.run } }
   
   
   it "forwards messages through the frontend to the backend" do

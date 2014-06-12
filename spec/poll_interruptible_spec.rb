@@ -14,7 +14,7 @@ describe ZMQ::PollInterruptible do
     let!(:never_sock) { ZMQ::Socket.new(ZMQ::PULL) } # A socket never used
     subject { poll_class.new never_sock }
     
-    around { |test| Timeout.timeout(1) {test.run} } # Timeout after 1 second
+    around { |test| Timeout.timeout(5) { test.run } }
     
     after { subject.close unless subject.dead? }
     
