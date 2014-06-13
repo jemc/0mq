@@ -16,11 +16,12 @@ Gem::Specification.new do |s|
   
   s.add_dependency 'ffi-rzmq-core', '~> 1.0'
   
-  s.add_development_dependency 'bundler'
-  s.add_development_dependency 'rake'
-  s.add_development_dependency 'pry'
-  s.add_development_dependency 'pry-rescue'
-  s.add_development_dependency 'rspec',     '~> 3.0'
-  s.add_development_dependency 'rspec-its', '~> 1.0'
-  s.add_development_dependency 'fivemat'
+  s.add_development_dependency 'bundler',    '~>  1.6'
+  s.add_development_dependency 'rake',       '~> 10.3'
+  s.add_development_dependency 'pry',        '~>  0.9'
+  s.add_development_dependency 'pry-rescue', '~>  1.4'
+  s.add_development_dependency 'rspec',      '~>  3.0'
+  s.add_development_dependency 'rspec-its',  '~>  1.0'
+  s.add_development_dependency 'fivemat',    '~>  1.3'
+  s.add_development_dependency 'yard',       '~>  0.8'
 end
