@@ -25,12 +25,12 @@ describe ZMQ::Socket do
   its(:type_sym) { should eq :SUB }
   
   after {
-    pull_sock.tap { |s| s.close unless s.closed? }
-    push_sock.tap { |s| s.close unless s.closed? }
-    req_sock .tap { |s| s.close unless s.closed? }
-    rtr_sockp.tap { |s| s.close unless s.closed? }
-    dlr_sockp.tap { |s| s.close unless s.closed? }
-    rtr_sock .tap { |s| s.close unless s.closed? }
+    pull_sock.close
+    push_sock.close
+    req_sock .close
+    rtr_sockp.close
+    dlr_sockp.close
+    rtr_sock .close
   }
   
   around { |test| Timeout.timeout(5) { test.run } }
