@@ -3,26 +3,17 @@ shared_examples "a poll class" do
   
   subject { poll_class.new pull }
   
-  let(:push) { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p1' } }
-  let(:pull) { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p1' } }
-  let(:push2){ ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p2' } }
-  let(:pull2){ ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p2' } }
+  before { stub_const "ZMQ::DefaultContext", ZMQ::Context.new }
   
-  before {
-    push
-    pull
-    push2
-    pull2
-  }
+  let(:push)  { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p1' } }
+  let(:pull)  { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p1' } }
+  let(:push2) { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p2' } }
+  let(:pull2) { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p2' } }
   
-  after {
-    push.close
-    pull.close
-    push2.close
-    pull2.close
-  }
+  before { push; pull; push2; pull2 }
   
   around { |test| Timeout.timeout(1) { test.run } }
+  
   
   context "initializer socket args:" do
     it "can accept a single socket with no event flags" do
