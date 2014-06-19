@@ -3,16 +3,17 @@ shared_examples "a poll class" do
   
   subject { poll_class.new pull }
   
-  before { stub_const "ZMQ::DefaultContext", ZMQ::Context.new }
+  before { stub_const "ZMQ::DefaultContext", context }
+  let(:context) { ZMQ::Context.new }
   
-  let(:push)  { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p1' } }
-  let(:pull)  { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p1' } }
-  let(:push2) { ZMQ::Socket.new(ZMQ::PUSH).tap { |s| s.bind    'inproc://p2' } }
-  let(:pull2) { ZMQ::Socket.new(ZMQ::PULL).tap { |s| s.connect 'inproc://p2' } }
+  let(:push) { ZMQ::Socket.new(ZMQ::PUSH).tap{ |s| s.bind    'ipc:///tmp/p1' } }
+  let(:pull) { ZMQ::Socket.new(ZMQ::PULL).tap{ |s| s.connect 'ipc:///tmp/p1' } }
+  let(:push2){ ZMQ::Socket.new(ZMQ::PUSH).tap{ |s| s.bind    'ipc:///tmp/p2' } }
+  let(:pull2){ ZMQ::Socket.new(ZMQ::PULL).tap{ |s| s.connect 'ipc:///tmp/p2' } }
   
   before { push; pull; push2; pull2 }
   
-  around { |test| Timeout.timeout(1) { test.run } }
+  around { |test| Timeout.timeout(5) { test.run } }
   
   
   context "initializer socket args:" do
@@ -29,9 +30,8 @@ shared_examples "a poll class" do
       push.send_string 'test'
       push2.send_string 'test'
       
-      poll_class.new(pull, pull2).tap { |p|
-        p.run.count.should eq 2
-      }
+      poll_class.new(pull, pull2)
+        .tap { |p| p.run until p.run.count == 2 }
     end
     
     it "can accept a single socket with an event flag" do
@@ -42,8 +42,10 @@ shared_examples "a poll class" do
     end
     
     it "can accept multiple sockets with event flags" do
+      sleep 0.05
+      
       poll_class.new(push => ZMQ::POLLOUT, push2 => ZMQ::POLLOUT)
-        .tap { |p| p.run.count.should eq 2 }
+        .tap { |p| p.run until p.run.count == 2 }
     end
     
     it "can accept multiple sockets with and without event flags" do
@@ -51,7 +53,7 @@ shared_examples "a poll class" do
       push2.send_string 'test'
       
       poll_class.new(pull, pull2, push => ZMQ::POLLOUT)
-        .tap { |p| p.run.count.should eq 3 }
+        .tap { |p| p.run until p.run.count == 3 }
     end
   end
   
