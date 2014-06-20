@@ -4,8 +4,16 @@ require 'ruby-prof'
 
 require_relative '../lib/0mq'
 
+Thread.abort_on_exception = true
 
-def benchmark description, count:1, profile:false, &block
+
+def benchmark description, opts={}, &block
+  count   = opts.fetch :count,   1
+  profile = opts.fetch :profile, false
+  warmup  = opts.fetch :warmup,  false
+  
+  block.call if warmup
+  
   description = "#{description} #{count} times" if count > 1
   puts
   puts description
