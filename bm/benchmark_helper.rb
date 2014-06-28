@@ -1,6 +1,6 @@
 
 require 'benchmark'
-require 'ruby-prof'
+require 'ruby-prof' unless defined? Rubinius
 
 require_relative '../lib/0mq'
 
@@ -11,6 +11,8 @@ def benchmark description, opts={}, &block
   count   = opts.fetch :count,   1
   profile = opts.fetch :profile, false
   warmup  = opts.fetch :warmup,  false
+  
+  profile = false if defined? Rubinius
   
   block.call if warmup
   

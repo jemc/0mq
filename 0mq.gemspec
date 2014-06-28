@@ -24,5 +24,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec-its',  '~>  1.0'
   s.add_development_dependency 'fivemat',    '~>  1.3'
   s.add_development_dependency 'yard',       '~>  0.8'
-  s.add_development_dependency 'ruby-prof',  '~>  0.15'
+  s.add_development_dependency 'ruby-prof',  '~>  0.15' unless defined? Rubinius
 end
