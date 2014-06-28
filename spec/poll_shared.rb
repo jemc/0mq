@@ -95,6 +95,7 @@ shared_examples "a poll class" do
     it "returns a hash of sockets ready for IO" do
       push.send_string 'test'
       push2.send_string 'test'
+      sleep 0.1
       
       results = poll_class.new(pull, pull2, push => ZMQ::POLLOUT).run
       
@@ -107,6 +108,7 @@ shared_examples "a poll class" do
     it "passes sockets ready for IO to a block" do
       push.send_string 'test'
       push2.send_string 'test'
+      sleep 0.1
       
       results = {}
       poll_class.new(pull, pull2, push => ZMQ::POLLOUT)
