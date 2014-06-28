@@ -51,6 +51,42 @@ describe ZMQ::PollInterruptible do
       interruptions.each { |sock,evts| sock.should eq nil; evts.should eq nil }
     end
     
+    it "can handle asynchronous calls to interrupt with a block" do
+      subject
+      queue = Queue.new
+      count = 100
+      
+      thr = Thread.new { subject.run until subject.dead? }
+      
+      count.times { |i|
+        Thread.new {
+          subject.interrupt { queue.push i }
+        }
+      }
+      
+      count.times { queue.pop } # expect all the items to reach the queue
+      subject.kill
+      thr.join
+    end
+    
+    it "can handle asynchronous calls to interrupt with a block, nonblocking" do
+      subject
+      queue = Queue.new
+      count = 100
+      
+      thr = Thread.new { subject.run until subject.dead? }
+      
+      count.times { |i|
+        Thread.new {
+          subject.interrupt(blocking: false) { queue.push i }
+        }
+      }
+      
+      count.times { queue.pop } # expect all the items to reach the queue
+      subject.kill
+      thr.join
+    end
+    
     it "can be killed" do
       subject
       subject.dead?.should eq false
