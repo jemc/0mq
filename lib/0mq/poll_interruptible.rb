@@ -24,9 +24,10 @@ module ZMQ
       @int_sock_push.connect int_endpoint+'P'
       @int_lock_push = Mutex.new
       
-      # Interruption blocks are stored here by key until #run receives them.
-      # After each is run, the return value is stored here in its place.
-      @interruptions = {}
+      # Interruption blocks are queued until #run receives them.
+      # After each is run, the return value is queued in @outerruptions.
+      @interruptions = Queue.new
+      @outerruptions = Queue.new
       
       @dead = false
       
@@ -46,8 +47,8 @@ module ZMQ
           
           # Call the user block of #interrupt and store the return value
           unless kill
-            result = @interruptions[key].call
-            blocking ? @interruptions[key] = result : @interruptions.delete(key)
+            result = @interruptions.pop.call
+            @outerruptions.push result if blocking
           end
           
           # Call the user block of #run
@@ -84,16 +85,17 @@ module ZMQ
       # block = block.dup
       key = block.object_id.to_s 36
       
-      @interruptions[key] = block # Store the block to be called
-      
       if blocking
         @int_lock_req.synchronize {
+          @interruptions.push block     # Store the block to be called
           @int_sock_req.send_string key # Signal an interruption to #run
           @int_sock_req.recv_array      # Wait until it has been handled by #run
         }
-        return @interruptions.delete key # Return the stored result of the block
+        return @outerruptions.pop       # Return the stored result of the block
+        
       else
         @int_lock_push.synchronize {
+          @interruptions.push block      # Store the block to be called
           @int_sock_push.send_string key # Signal an interruption to #run
         }
         return nil
