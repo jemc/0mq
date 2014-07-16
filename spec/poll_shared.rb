@@ -3,13 +3,13 @@ shared_examples "a poll class" do
   
   subject { poll_class.new pull }
   
-  before { stub_const "ZMQ::DefaultContext", context }
-  let(:context) { ZMQ::Context.new }
+  let(:endpt_1) { 'ipc:///tmp/0mq_ps_' + Object.new.object_id.to_s }
+  let(:endpt_2) { 'ipc:///tmp/0mq_ps_' + Object.new.object_id.to_s }
   
-  let(:push) { ZMQ::Socket.new(ZMQ::PUSH).tap{ |s| s.bind    'ipc:///tmp/p1' } }
-  let(:pull) { ZMQ::Socket.new(ZMQ::PULL).tap{ |s| s.connect 'ipc:///tmp/p1' } }
-  let(:push2){ ZMQ::Socket.new(ZMQ::PUSH).tap{ |s| s.bind    'ipc:///tmp/p2' } }
-  let(:pull2){ ZMQ::Socket.new(ZMQ::PULL).tap{ |s| s.connect 'ipc:///tmp/p2' } }
+  let(:push) { ZMQ::Socket.new(ZMQ::PUSH).tap{ |s| s.bind    endpt_1 } }
+  let(:pull) { ZMQ::Socket.new(ZMQ::PULL).tap{ |s| s.connect endpt_1 } }
+  let(:push2){ ZMQ::Socket.new(ZMQ::PUSH).tap{ |s| s.bind    endpt_2 } }
+  let(:pull2){ ZMQ::Socket.new(ZMQ::PULL).tap{ |s| s.connect endpt_2 } }
   
   before { push; pull; push2; pull2 }
   
