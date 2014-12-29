@@ -27,6 +27,11 @@ module ZMQ
       
       ObjectSpace.define_finalizer self,
         self.class.finalizer(@pointer, @context, Process.pid)
+      
+      if block_given?
+        yield self
+        close
+      end
     end
     
     # Show a useful inspect output

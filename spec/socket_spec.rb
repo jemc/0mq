@@ -36,6 +36,16 @@ describe ZMQ::Socket do
   around { |test| Timeout.timeout(5) { test.run } }
   
   
+  it "can be instantiated with a block that implicitly closes it at the end" do
+    saved_s = nil
+    s = ZMQ::Socket.new ZMQ::REP do |s|
+      s.should_not be_closed
+      saved_s = s
+    end
+    s.should equal saved_s
+    s.should be_closed
+  end
+  
   it "can bind to an endpoint" do
     subject.bind socket_path
   end
